@@ -1,0 +1,53 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration",
+    "sha256": "8c046670634ff515e709cba8a2324b4d09aef445916ff8a7d33c957c9bbf9b82",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "5",
+    "mechanism": "N6",
+    "modality": "position",
+    "origin": "natural"
+  },
+  "n_compromised": 507,
+  "n_windows": 941,
+  "seeds": {
+    "corruption": 1188421796,
+    "design": 3704241009,
+    "detectors": 3809023408,
+    "plant": 4006727803,
+    "sensors": 1236530410,
+    "window": 3160634940
+  },
+  "sensor_counts": {
+    "current": 13,
+    "force": 6,
+    "position": 13,
+    "vision": 6
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 342.544,
+    "horizon_h": 2073.202,
+    "kind": "corruption",
+    "mechanism": "N6",
+    "noise_frac": 0.003675,
+    "onset_h": 1059.795,
+    "origin": "natural",
+    "process_fault": null,
+    "run_id": "calibration-robot-00288",
+    "run_index": 888,
+    "scenario": "robot",
+    "sensors_per_modality": 13,
+    "severity": "low"
+  }
+}

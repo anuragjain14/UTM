@@ -1,0 +1,5 @@
+constraint,recall,fpr,auc
+R1_current_speed,0.281772,0.00717552,0.724878
+R2_acoustic_vibration,0.0481984,0.02611,0.51933
+R3_thermal,0.00919856,0.0100893,0.552272
+R4_vibration_speed,0.0222298,0.0265409,0.518558

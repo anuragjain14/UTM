@@ -1,0 +1,50 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 1.0,
+    "name": "test",
+    "sha256": "257c37234e4a51f9fd606b1235fd1387f0000d798dafde74e90ddb6c96dbda23",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": null,
+  "n_compromised": 0,
+  "n_windows": 1303,
+  "seeds": {
+    "corruption": 3021804125,
+    "design": 1788949435,
+    "detectors": 1001712206,
+    "plant": 3417233909,
+    "sensors": 1554494479,
+    "window": 1839586939
+  },
+  "sensor_counts": {
+    "acoustic": 7,
+    "ambient": 1,
+    "current": 7,
+    "speed": 2,
+    "temperature": 7,
+    "vibration": 7
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 833.653,
+    "horizon_h": 2796.516,
+    "kind": "clean",
+    "mechanism": null,
+    "noise_frac": 0.006465,
+    "onset_h": null,
+    "origin": "none",
+    "process_fault": null,
+    "run_id": "test-motor-00776",
+    "run_index": 776,
+    "scenario": "motor",
+    "sensors_per_modality": 7,
+    "severity": null
+  }
+}

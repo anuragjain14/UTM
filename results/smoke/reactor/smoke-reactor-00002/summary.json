@@ -1,0 +1,49 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "smoke",
+    "mismatch": 1.0,
+    "name": "smoke",
+    "sha256": "1de6500cd7c5651b0fedb93ab39033cf459eac0736a2c393fa5a070a83dbe1c8",
+    "warmup_h": 96.0,
+    "window_samples": 256
+  },
+  "corruption": null,
+  "n_compromised": 0,
+  "n_windows": 139,
+  "seeds": {
+    "corruption": 940685675,
+    "design": 3002310702,
+    "detectors": 1937640097,
+    "plant": 2629203362,
+    "sensors": 3555531158,
+    "window": 88320162
+  },
+  "sensor_counts": {
+    "coolant_flow": 6,
+    "feed_flow": 2,
+    "level": 6,
+    "pressure": 6,
+    "temperature": 6
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 1.7,
+    "horizon_h": 372.301,
+    "kind": "clean",
+    "mechanism": null,
+    "noise_frac": 0.018929,
+    "onset_h": null,
+    "origin": "none",
+    "process_fault": null,
+    "run_id": "smoke-reactor-00002",
+    "run_index": 6,
+    "scenario": "reactor",
+    "sensors_per_modality": 6,
+    "severity": null
+  }
+}

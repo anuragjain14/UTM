@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration",
+    "sha256": "8c046670634ff515e709cba8a2324b4d09aef445916ff8a7d33c957c9bbf9b82",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "3",
+    "mechanism": "A2",
+    "modality": "vibration",
+    "origin": "adversarial"
+  },
+  "n_compromised": 3388,
+  "n_windows": 4476,
+  "seeds": {
+    "corruption": 1940900265,
+    "design": 3196739545,
+    "detectors": 869922724,
+    "plant": 8778337,
+    "sensors": 551860345,
+    "window": 187498363
+  },
+  "sensor_counts": {
+    "acoustic": 5,
+    "ambient": 1,
+    "current": 5,
+    "speed": 2,
+    "temperature": 5,
+    "vibration": 5
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": "mimic",
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 977.445,
+    "horizon_h": 9142.511,
+    "kind": "corruption",
+    "mechanism": "A2",
+    "noise_frac": 0.002433,
+    "onset_h": 2366.395,
+    "origin": "adversarial",
+    "process_fault": null,
+    "run_id": "calibration-motor-00103",
+    "run_index": 103,
+    "scenario": "motor",
+    "sensors_per_modality": 5,
+    "severity": "medium"
+  }
+}

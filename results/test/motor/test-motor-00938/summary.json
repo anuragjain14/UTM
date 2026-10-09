@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 1.0,
+    "name": "test",
+    "sha256": "257c37234e4a51f9fd606b1235fd1387f0000d798dafde74e90ddb6c96dbda23",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "13",
+    "mechanism": "A1",
+    "modality": "current",
+    "origin": "adversarial"
+  },
+  "n_compromised": 371,
+  "n_windows": 2713,
+  "seeds": {
+    "corruption": 3490293789,
+    "design": 3590901625,
+    "detectors": 4137508958,
+    "plant": 1441431448,
+    "sensors": 4116056021,
+    "window": 2734300911
+  },
+  "sensor_counts": {
+    "acoustic": 14,
+    "ambient": 1,
+    "current": 14,
+    "speed": 2,
+    "temperature": 14,
+    "vibration": 14
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": "naive",
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 510.599,
+    "horizon_h": 5617.085,
+    "kind": "corruption",
+    "mechanism": "A1",
+    "noise_frac": 0.057933,
+    "onset_h": 4875.457,
+    "origin": "adversarial",
+    "process_fault": null,
+    "run_id": "test-motor-00938",
+    "run_index": 938,
+    "scenario": "motor",
+    "sensors_per_modality": 14,
+    "severity": "high"
+  }
+}

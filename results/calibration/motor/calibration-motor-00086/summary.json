@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration",
+    "sha256": "8c046670634ff515e709cba8a2324b4d09aef445916ff8a7d33c957c9bbf9b82",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "3",
+    "mechanism": "N5",
+    "modality": "temperature",
+    "origin": "natural"
+  },
+  "n_compromised": 221,
+  "n_windows": 2611,
+  "seeds": {
+    "corruption": 613840978,
+    "design": 251097612,
+    "detectors": 353051478,
+    "plant": 2307264523,
+    "sensors": 1295684702,
+    "window": 4142036924
+  },
+  "sensor_counts": {
+    "acoustic": 4,
+    "ambient": 1,
+    "current": 4,
+    "speed": 2,
+    "temperature": 4,
+    "vibration": 4
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 498.065,
+    "horizon_h": 5413.477,
+    "kind": "corruption",
+    "mechanism": "N5",
+    "noise_frac": 0.001322,
+    "onset_h": 4365.947,
+    "origin": "natural",
+    "process_fault": null,
+    "run_id": "calibration-motor-00086",
+    "run_index": 86,
+    "scenario": "motor",
+    "sensors_per_modality": 4,
+    "severity": "high"
+  }
+}

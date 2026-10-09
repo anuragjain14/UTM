@@ -1,0 +1,53 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 1.0,
+    "name": "test",
+    "sha256": "257c37234e4a51f9fd606b1235fd1387f0000d798dafde74e90ddb6c96dbda23",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "2",
+    "mechanism": "A1",
+    "modality": "vision",
+    "origin": "adversarial"
+  },
+  "n_compromised": 152,
+  "n_windows": 1143,
+  "seeds": {
+    "corruption": 3376449229,
+    "design": 265747236,
+    "detectors": 2376448775,
+    "plant": 2269431495,
+    "sensors": 2508866215,
+    "window": 2598399966
+  },
+  "sensor_counts": {
+    "current": 10,
+    "force": 6,
+    "position": 10,
+    "vision": 3
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": "mimic",
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 145.086,
+    "horizon_h": 2477.733,
+    "kind": "corruption",
+    "mechanism": "A1",
+    "noise_frac": 0.006127,
+    "onset_h": 2172.169,
+    "origin": "adversarial",
+    "process_fault": null,
+    "run_id": "test-robot-00449",
+    "run_index": 2449,
+    "scenario": "robot",
+    "sensors_per_modality": 10,
+    "severity": "low"
+  }
+}

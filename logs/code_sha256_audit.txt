@@ -1,0 +1,17 @@
+08d99429291c726fa39f7b59c9bb2d375ff03d655f5bafe49e083ad4c8fea6d2  utmsim/__init__.py
+c6cd277050ead2d11c98b7cbab91ada7d19e495c95e4c86de1f9aaf2b2051d38  utmsim/__main__.py
+e3545afc3a24c60e04881ccc7be7985b42a7f10f9d78ecc20700dfdb89f49a06  utmsim/attribution.py
+5d6a718bad5c2bd2ecb8ca4520b345a7133d79e74effd52d7141392498b65cf6  utmsim/cli.py
+0c0395803e4e8c3883b10d18328f3a5664db3a1754fa15a47828431b390c0bf4  utmsim/config.py
+b913d1ee529a19e3ab5eb6f3909681fe9f05905a3dde4026ffa29edf72ff7d80  utmsim/corruption.py
+3c2cc36130f259b74bf0921bc85532dba020388de0978a50fdd264aaebd8ba34  utmsim/detectors.py
+
+# 2026-10-09: post-freeze change to REPORTING code only (utmsim/metrics.py, utmsim/report.py):
+# run-level bootstrap of AUC reimplemented as an exact weighted computation (FastAUC) for speed.
+# Verified identical to the original implementation (same point AUC, same replicate values,
+# identical CIs for the same seed). Simulation, detectors, campaigns and thresholds.json unchanged.
+752dccb0012ae36158510d56b7f2e12d8ad727b6a39a0656bb8dc63dadb96029  utmsim/metrics.py
+ebba15a921f24526630c7c5f70d97b22adad25689c60525695bc104d95e25979  utmsim/report.py
+
+# 2026-10-09: report.py _write_csv now quotes values containing commas (O14 environment row was split). Formatting only.
+47c51868e52d2ef61b30de76c2806c7878fc92c817503055c4d29ebca67f5114  utmsim/report.py

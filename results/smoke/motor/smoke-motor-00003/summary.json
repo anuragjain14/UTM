@@ -1,0 +1,50 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "smoke",
+    "mismatch": 1.0,
+    "name": "smoke",
+    "sha256": "1de6500cd7c5651b0fedb93ab39033cf459eac0736a2c393fa5a070a83dbe1c8",
+    "warmup_h": 96.0,
+    "window_samples": 256
+  },
+  "corruption": null,
+  "n_compromised": 0,
+  "n_windows": 117,
+  "seeds": {
+    "corruption": 363461513,
+    "design": 2242006588,
+    "detectors": 4101755525,
+    "plant": 4190454722,
+    "sensors": 1727801524,
+    "window": 3133428486
+  },
+  "sensor_counts": {
+    "acoustic": 6,
+    "ambient": 1,
+    "current": 6,
+    "speed": 2,
+    "temperature": 6,
+    "vibration": 6
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": 107.221,
+    "fs_hz": 970.498,
+    "horizon_h": 328.199,
+    "kind": "process_only",
+    "mechanism": null,
+    "noise_frac": 0.083436,
+    "onset_h": null,
+    "origin": "none",
+    "process_fault": "P1_bearing_wear",
+    "run_id": "smoke-motor-00003",
+    "run_index": 3,
+    "scenario": "motor",
+    "sensors_per_modality": 6,
+    "severity": null
+  }
+}

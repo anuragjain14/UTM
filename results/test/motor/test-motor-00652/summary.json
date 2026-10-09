@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 1.0,
+    "name": "test",
+    "sha256": "257c37234e4a51f9fd606b1235fd1387f0000d798dafde74e90ddb6c96dbda23",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "9",
+    "mechanism": "A2",
+    "modality": "vibration",
+    "origin": "adversarial"
+  },
+  "n_compromised": 3244,
+  "n_windows": 3632,
+  "seeds": {
+    "corruption": 1286798366,
+    "design": 2594597413,
+    "detectors": 4039759452,
+    "plant": 1909730097,
+    "sensors": 3670003651,
+    "window": 2397167207
+  },
+  "sensor_counts": {
+    "acoustic": 15,
+    "ambient": 1,
+    "current": 15,
+    "speed": 2,
+    "temperature": 15,
+    "vibration": 15
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": "mimic",
+    "attacker_knowledge": null,
+    "fault_onset_h": 4762.274,
+    "fs_hz": 386.244,
+    "horizon_h": 7455.792,
+    "kind": "combo",
+    "mechanism": "A2",
+    "noise_frac": 0.073466,
+    "onset_h": 966.716,
+    "origin": "adversarial",
+    "process_fault": "P1_bearing_wear",
+    "run_id": "test-motor-00652",
+    "run_index": 652,
+    "scenario": "motor",
+    "sensors_per_modality": 15,
+    "severity": "high"
+  }
+}

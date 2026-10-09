@@ -1,0 +1,22 @@
+{
+  "code_commit": "not-a-git-repo",
+  "environment": {
+    "cpu_count": 16,
+    "cpu_model": "Apple M3 Max",
+    "hostname": "Manns-M3-Max.local",
+    "machine": "arm64",
+    "numpy": "2.5.3",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.14.4",
+    "scikit_learn": "1.9.1"
+  },
+  "files": {
+    "summary.json": "e6414a31b3110102d580cc70ebc8d3c5c64e4d40e509861af68ff3937b53375e",
+    "timing.csv.gz": "dbee0dbae78b663d1d09d3517242dabe67a8b5ccf3a7e50abd250029bb4d6715",
+    "windows.csv.gz": "5eb0d496e0f31cb558345b5c745b50e17457523e142db6f70dedd3858f624674"
+  },
+  "finished_utc": "2026-10-09T04:47:54Z",
+  "peak_rss_mb": 258.0,
+  "run_id": "test-robot-00318",
+  "wall_s": 9.91
+}

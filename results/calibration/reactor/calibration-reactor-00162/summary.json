@@ -1,0 +1,49 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration",
+    "sha256": "8c046670634ff515e709cba8a2324b4d09aef445916ff8a7d33c957c9bbf9b82",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": null,
+  "n_compromised": 0,
+  "n_windows": 969,
+  "seeds": {
+    "corruption": 2203934344,
+    "design": 1996491560,
+    "detectors": 550131846,
+    "plant": 1912937454,
+    "sensors": 4151298261,
+    "window": 1221798455
+  },
+  "sensor_counts": {
+    "coolant_flow": 10,
+    "feed_flow": 2,
+    "level": 10,
+    "pressure": 10,
+    "temperature": 10
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 7.312,
+    "horizon_h": 2128.895,
+    "kind": "clean",
+    "mechanism": null,
+    "noise_frac": 0.006404,
+    "onset_h": null,
+    "origin": "none",
+    "process_fault": null,
+    "run_id": "calibration-reactor-00162",
+    "run_index": 462,
+    "scenario": "reactor",
+    "sensors_per_modality": 10,
+    "severity": null
+  }
+}

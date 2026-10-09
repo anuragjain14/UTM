@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration",
+    "sha256": "8c046670634ff515e709cba8a2324b4d09aef445916ff8a7d33c957c9bbf9b82",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "0",
+    "mechanism": "N6",
+    "modality": "speed",
+    "origin": "natural"
+  },
+  "n_compromised": 1049,
+  "n_windows": 2655,
+  "seeds": {
+    "corruption": 2686597928,
+    "design": 527305089,
+    "detectors": 3069158050,
+    "plant": 2293269412,
+    "sensors": 196410233,
+    "window": 2624486829
+  },
+  "sensor_counts": {
+    "acoustic": 12,
+    "ambient": 1,
+    "current": 12,
+    "speed": 2,
+    "temperature": 12,
+    "vibration": 12
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 258.749,
+    "horizon_h": 5501.972,
+    "kind": "corruption",
+    "mechanism": "N6",
+    "noise_frac": 0.021468,
+    "onset_h": 3402.411,
+    "origin": "natural",
+    "process_fault": null,
+    "run_id": "calibration-motor-00293",
+    "run_index": 293,
+    "scenario": "motor",
+    "sensors_per_modality": 12,
+    "severity": "low"
+  }
+}

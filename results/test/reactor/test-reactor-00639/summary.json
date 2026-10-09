@@ -1,0 +1,54 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 1.0,
+    "name": "test",
+    "sha256": "257c37234e4a51f9fd606b1235fd1387f0000d798dafde74e90ddb6c96dbda23",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "3",
+    "mechanism": "A2",
+    "modality": "coolant_flow",
+    "origin": "adversarial"
+  },
+  "n_compromised": 397,
+  "n_windows": 424,
+  "seeds": {
+    "corruption": 953809980,
+    "design": 1486375327,
+    "detectors": 431432258,
+    "plant": 4104526666,
+    "sensors": 3715491392,
+    "window": 951441502
+  },
+  "sensor_counts": {
+    "coolant_flow": 10,
+    "feed_flow": 2,
+    "level": 10,
+    "pressure": 10,
+    "temperature": 10
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": "naive",
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 6.532,
+    "horizon_h": 1038.87,
+    "kind": "corruption",
+    "mechanism": "A2",
+    "noise_frac": 0.002155,
+    "onset_h": 244.778,
+    "origin": "adversarial",
+    "process_fault": null,
+    "run_id": "test-reactor-00639",
+    "run_index": 1639,
+    "scenario": "reactor",
+    "sensors_per_modality": 10,
+    "severity": "high"
+  }
+}
