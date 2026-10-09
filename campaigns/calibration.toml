@@ -1,0 +1,14 @@
+# CALIBRATION campaign (E-CAL). Used only to choose gate weights and thresholds (1% FPR).
+# Seeds are disjoint from the test campaign (different base_seed; AC-5).
+[campaign]
+name = "calibration"
+kind = "calibration"
+base_seed = 1001
+mismatch = 1.0
+
+[scenarios.motor]
+runs = 300
+[scenarios.reactor]
+runs = 300
+[scenarios.robot]
+runs = 300

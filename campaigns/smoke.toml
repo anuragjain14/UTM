@@ -1,0 +1,28 @@
+# Smoke campaign (requirement T-7): tiny horizons, a few runs per scenario. Checks that the whole
+# pipeline works end to end; its numbers are NOT results.
+[campaign]
+name = "smoke"
+kind = "smoke"
+base_seed = 101
+window_samples = 256
+eval_every_h = 2.0
+warmup_h = 96.0
+warmup_every_h = 2.0
+
+[ranges]
+horizon_h = [300.0, 400.0]
+onset_h = [100.0, 200.0]
+sensors_per_modality = [4, 6]
+
+[condition_weights]
+clean = 1.0
+process_only = 1.0
+corruption = 3.0
+combo = 1.0
+
+[scenarios.motor]
+runs = 4
+[scenarios.reactor]
+runs = 4
+[scenarios.robot]
+runs = 4

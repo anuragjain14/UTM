@@ -1,0 +1,14 @@
+# E-MISMATCH: same design as the test campaign but with detector-model mismatch 2x
+# (generator parameters perturbed 2x the default). Report with the SAME thresholds.json.
+[campaign]
+name = "mismatch_2x"
+kind = "test"
+base_seed = 3002
+mismatch = 2.0
+
+[scenarios.motor]
+runs = 300
+[scenarios.reactor]
+runs = 300
+[scenarios.robot]
+runs = 300

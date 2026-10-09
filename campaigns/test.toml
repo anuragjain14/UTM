@@ -1,0 +1,14 @@
+# TEST campaign (E-MAIN, E-PHYS, E-PERF, E-LEARN, E-ABL, E-ATTR, E-COORD).
+# FREEZE this file, the code commit and thresholds.json BEFORE running it (G4).
+[campaign]
+name = "test"
+kind = "test"
+base_seed = 2002
+mismatch = 1.0
+
+[scenarios.motor]
+runs = 1000
+[scenarios.reactor]
+runs = 1000
+[scenarios.robot]
+runs = 1000

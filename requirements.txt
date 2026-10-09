@@ -1,0 +1,5 @@
+# Core: numpy only. scikit-learn enables baselines B4 (Isolation Forest), B5 (one-class SVM) and the
+# gradient-boosting attribution classifier; without it those rows are reported as "not run".
+# After installing, record exact versions with:  pip freeze > requirements.lock
+numpy>=2.0
+scikit-learn>=1.5
