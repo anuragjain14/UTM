@@ -111,6 +111,8 @@ class RobotPlant(Plant):
 
 class RobotNominal(Nominal):
     relation_groups = ("R1_kinematics", "R2_dynamics", "R3_payload")
+    # v2 (B3): relations that a known process fault (P1/P2/P3) shifts consistently across sensors
+    fault_explainable = ("R2_dynamics",)
 
     def __init__(self, joint_of):
         super().__init__()

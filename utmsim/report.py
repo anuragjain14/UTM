@@ -2,7 +2,9 @@
 
   calibrate  -> thresholds.json   (gate weights + per-architecture thresholds at a fixed FPR,
                                     from CALIBRATION runs only; requirements AC-3, G4)
-  report     -> tables (CSV + report.md) for outputs O1, O5-O10, O12-O14
+  report     -> tables (CSV + report.md) for outputs O1, O5-O10, O12-O17
+v2 (follow-up B) configurations are scored when the runs carry the v2 columns and the thresholds
+file has a "v2" section (see v2.py).
 """
 
 import json
@@ -11,7 +13,8 @@ from pathlib import Path
 import numpy as np
 
 from .io import read_csv_gz
-from .metrics import auc, bootstrap_runs, confusion, delong, wilson
+from .metrics import FastAUC, auc, bootstrap_auc, confusion, delong, wilson
+from .v2 import VARIANTS, architectures_v2, calibrate_v2, has_v2
 
 BASE_COLS = ["compromised", "process_fault", "hours_since_onset", "gate_ok", "err_gated", "err_ungated", "t_h"]
 GROUP_COLS = {"motor": ["R1_current_speed", "R2_acoustic_vibration", "R3_thermal", "R4_vibration_speed"],
@@ -20,6 +23,10 @@ GROUP_COLS = {"motor": ["R1_current_speed", "R2_acoustic_vibration", "R3_thermal
 WEIGHT_GRID = [w for w in [(a / 4, b / 4, (4 - a - b) / 4) for a in range(5) for b in range(5 - a)]]
 BASELINES = ["B1_separated", "B2_security", "B3_reliability", "B4_iforest", "B5_ocsvm", "B6_pca", "B7_cusum"]
 ABLATION = ["cm_only", "phys_only", "learn_only", "gate_cm_phys", "proposed"]
+ABLATION_V2 = ["v2_no_accum", "v2_no_fa", "v2_no_hybrid", "proposed_v2"]
+EVENT_WITHIN_H = [24, 168, 720]
+TTD_GRID_H = [2, 6, 12, 24, 48, 168, 336, 720, 2000, 5000]
+EFFECT_SIGMA_MIN = 1.0      # A3 effective-onset label: corruption effect >= 1 sigma of sensor noise
 
 
 # ---------------------------------------------------------------------------------------------
@@ -65,45 +72,65 @@ def architectures(d, weights):
         "B1_separated": np.fmax(sec, rel), "B2_security": sec, "B3_reliability": rel,
         "B4_iforest": Z("iforest"), "B5_ocsvm": Z("ocsvm"), "B6_pca": Z("pca"), "B7_cusum": Z("cusum"),
     }
-    for g in [k[7:] for k in d if k.startswith("z_phys_")]:
+    groups = {g for gs in GROUP_COLS.values() for g in gs}
+    for g in [k[7:] for k in d if k.startswith("z_phys_") and k[7:] in groups]:
         a["phys_" + g] = Z("phys_" + g)
     return a
 
 
 # ---------------------------------------------------------------------------------------------
-def calibrate(results_dir, fpr=0.01):
+def _threshold(s, y, fpr):
+    neg = s[~y]
+    neg = neg[np.isfinite(neg)]
+    return float(np.quantile(neg, 1 - fpr)) if len(neg) else float("nan")
+
+
+def calibrate(results_dir, fpr=0.01, base=None):
+    """`base` (a frozen thresholds dict): keep its v1 weights and thresholds unchanged and only add
+    the v2 configurations tuned on these runs (follow-up B; v1 method stays as frozen)."""
     out = {"fpr_target": fpr, "source": str(results_dir), "scenarios": {}}
+    if base is not None:
+        out["v1_source"] = base.get("source")
     for scen in ("motor", "reactor", "robot"):
         L = load(results_dir, scen)
         if L is None:
             continue
         d, y = L["data"], L["data"]["y"]
-        best = None
-        for w in WEIGHT_GRID:
-            s = w[0] * d["z_cm"] + w[1] * d["z_phys"] + w[2] * d["z_learn"]
-            a = auc(s, y)
-            if np.isfinite(a) and (best is None or a > best[0]):
-                best = (a, w)
-        best2 = None
-        for k in range(5):
-            w = (k / 4, 1 - k / 4)
-            a = auc(w[0] * d["z_cm"] + w[1] * d["z_phys"], y)
-            if np.isfinite(a) and (best2 is None or a > best2[0]):
-                best2 = (a, w)
-        weights = {"proposed": list(best[1]) if best else [1 / 3] * 3,
-                   "gate_cm_phys": list(best2[1]) if best2 else [0.5, 0.5]}
-        arch = architectures(d, weights)
-        thr = {}
-        for name, s in arch.items():
-            neg = s[~y]
-            neg = neg[np.isfinite(neg)]
-            thr[name] = float(np.quantile(neg, 1 - fpr)) if len(neg) else float("nan")
-        out["scenarios"][scen] = {"weights": weights, "thresholds": thr,
-                                  "calibration_auc_proposed": best[0] if best else None,
-                                  "n_runs": len(L["specs"]), "n_windows": int(len(y)),
-                                  "n_negative_windows": int((~y).sum()),
-                                  "campaign_sha256": sorted({s["campaign"]["sha256"] for s in L["specs"]})}
+        if base is not None:
+            if scen not in base["scenarios"] or base["fpr_target"] != fpr:
+                raise ValueError(f"base thresholds lack scenario {scen!r} or use a different FPR target")
+            entry = json.loads(json.dumps(base["scenarios"][scen]))
+        else:
+            entry = _calibrate_v1(d, y, fpr)
+        entry.update({"n_runs": len(L["specs"]), "n_windows": int(len(y)), "n_negative_windows": int((~y).sum()),
+                      "campaign_sha256": sorted({s["campaign"]["sha256"] for s in L["specs"]})})
+        if has_v2(d):
+            cfgs = calibrate_v2(d, y)
+            for name, sc in architectures_v2(d, cfgs).items():
+                entry["thresholds"][name] = _threshold(sc, y, fpr)
+            entry["v2"] = cfgs
+        out["scenarios"][scen] = entry
     return out
+
+
+def _calibrate_v1(d, y, fpr):
+    best = None
+    for w in WEIGHT_GRID:
+        s = w[0] * d["z_cm"] + w[1] * d["z_phys"] + w[2] * d["z_learn"]
+        a = auc(s, y)
+        if np.isfinite(a) and (best is None or a > best[0]):
+            best = (a, w)
+    best2 = None
+    for k in range(5):
+        w = (k / 4, 1 - k / 4)
+        a = auc(w[0] * d["z_cm"] + w[1] * d["z_phys"], y)
+        if np.isfinite(a) and (best2 is None or a > best2[0]):
+            best2 = (a, w)
+    weights = {"proposed": list(best[1]) if best else [1 / 3] * 3,
+               "gate_cm_phys": list(best2[1]) if best2 else [0.5, 0.5]}
+    arch = architectures(d, weights)
+    thr = {name: _threshold(s, y, fpr) for name, s in arch.items()}
+    return {"weights": weights, "thresholds": thr, "calibration_auc_proposed": best[0] if best else None}
 
 
 # ---------------------------------------------------------------------------------------------
@@ -130,6 +157,133 @@ def detection_delay(d, dec, specs):
     return out
 
 
+def _auc_vs_neg(neg_sorted, pos):
+    """Mann-Whitney AUC of `pos` against pre-sorted negatives (ties count 1/2)."""
+    pos = pos[np.isfinite(pos)]
+    if not len(pos) or not len(neg_sorted):
+        return float("nan")
+    lo = np.searchsorted(neg_sorted, pos, "left")
+    hi = np.searchsorted(neg_sorted, pos, "right")
+    return float((lo + hi).mean() / 2 / len(neg_sorted))
+
+
+def detectability_table(out_dir, scen, arch, dec, shown, y, lab, runs, specs):
+    """O15 (A2): recall at threshold and AUC vs magnitude k (x normal operating variability), over all
+    mechanisms and per mechanism. AUC = compromised windows of the cell against all clean windows."""
+    kk = np.array([float(s["spec"].get("magnitude_k") or np.nan) for s in specs])[runs]
+    neg = {}
+    for a in shown:
+        v = arch[a][~y]
+        neg[a] = np.sort(v[np.isfinite(v)])
+    rows = []
+    for m in ["all"] + sorted(set(lab[y].tolist())):
+        for k in sorted(set(kk[y & np.isfinite(kk)].tolist())):
+            cell = y & (kk == k) & ((lab == m) if m != "all" else True)
+            if not cell.any():
+                continue
+            r = {"mechanism": m, "magnitude_k": k, "n_runs": len(set(runs[cell].tolist())), "n_windows": int(cell.sum())}
+            for a in shown:
+                r["recall_" + a] = float(dec[a][cell].mean())
+                r["auc_" + a] = _auc_vs_neg(neg[a], arch[a][cell])
+            rows.append(r)
+    _write_csv(out_dir / f"O15_detectability_{scen}.csv", rows)
+    cols = [a for a in ("proposed", "proposed_v2", "B6_pca", "B7_cusum") if a in shown]
+    md = ["\n### O15 Detectability: recall @ threshold / AUC vs magnitude (k × normal operating variability), all mechanisms\n\n"
+          "| k | runs | " + " | ".join(cols) + " |\n|---|---|" + "---|" * len(cols)]
+    for r in rows:
+        if r["mechanism"] == "all":
+            md.append(f"| {r['magnitude_k']:g} | {r['n_runs']} | " + " | ".join(
+                f"{_fmt(r['recall_' + a], 2)} / {_fmt(r['auc_' + a])}" for a in cols) + " |")
+    md.append(f"\nPer-mechanism rows and all architectures: `O15_detectability_{scen}.csv`.\n")
+    return md
+
+
+def event_tables(out_dir, scen, d, dec, shown, specs, every):
+    """O16 (A3): event-level detection. One event = one corrupted run; detected within W h if any alarm
+    falls within W h of the start. Two starts: the scheduled onset, and the effective onset (first
+    window whose corruption effect is >= EFFECT_SIGMA_MIN sigma of sensor noise; runs that never get
+    there are counted separately). chance_within_W = measured fraction of consecutive W-hour blocks
+    of uncorrupted runs with >= 1 alarm, i.e. what alarms unrelated to the attack would score
+    (measured, not (1-FPR)^n, because accumulated scores give clustered alarms)."""
+    runs, y, hs = d["run"], d["y"], d["hours_since_onset"]
+    eff = d.get("effect_sigma")
+    bounds = np.searchsorted(runs, np.arange(len(specs) + 1))
+    events = []
+    for k, s in enumerate(specs):
+        sl = slice(bounds[k], bounds[k + 1])
+        if not s["spec"]["mechanism"] or not np.isfinite(hs[sl]).any():
+            continue
+        e = None
+        if eff is not None:
+            ok = y[sl] & (eff[sl] >= EFFECT_SIGMA_MIN)
+            e = float(hs[sl][ok].min()) if ok.any() else None
+        events.append((sl, e))
+    clean_runs = [slice(bounds[k], bounds[k + 1]) for k, s in enumerate(specs) if not s["spec"]["mechanism"]]
+    starts = [("onset", lambda e: 0.0)] + ([("effective_onset", lambda e: e)] if eff is not None else [])
+    rows, curves = [], []
+    for a in shown:
+        chance = {W: _block_alarm_rate(dec[a], clean_runs, max(int(round(W / every)), 1)) for W in EVENT_WITHIN_H}
+        for name, start in starts:
+            dl = []
+            for sl, e in events:
+                st = start(e)
+                if st is None:
+                    continue
+                h = hs[sl]
+                al = dec[a][sl] & np.isfinite(h) & (h >= st)
+                dl.append(float(h[al].min() - st) if al.any() else np.inf)
+            dl = np.array(dl)
+            n = len(dl)
+            r = {"architecture": a, "start": name, "n_events": n, "n_never_effective": len(events) - n}
+            for W in EVENT_WITHIN_H:
+                r[f"detected_within_{W}h"] = float((dl <= W).mean()) if n else float("nan")
+                r[f"chance_within_{W}h"] = chance[W]
+            got = dl[np.isfinite(dl)]
+            r["detected_ever"] = float(len(got) / n) if n else float("nan")
+            r["median_delay_h"] = float(np.median(got)) if len(got) else float("nan")
+            rows.append(r)
+            curves += [{"architecture": a, "start": name, "within_h": W,
+                        "fraction_detected": float((dl <= W).mean()) if n else float("nan")} for W in TTD_GRID_H]
+    _write_csv(out_dir / f"O16_events_{scen}.csv", rows)
+    _write_csv(out_dir / f"O16_time_to_detect_{scen}.csv", curves)
+    md = []
+    for name, _ in starts:
+        sub = [r for r in rows if r["start"] == name]
+        extra = f" ({sub[0]['n_never_effective']} events never reached {EFFECT_SIGMA_MIN:g}σ, excluded)" if sub and name == "effective_onset" else ""
+        md.append(f"\n### O16 Event-level detection from {name.replace('_', ' ')}: {sub[0]['n_events'] if sub else 0} events{extra}\n\n"
+                  "| Architecture | ≤ 24 h | ≤ 168 h (chance) | ≤ 720 h | Ever | Median delay h |\n|---|---|---|---|---|---|")
+        for r in sub:
+            md.append(f"| {r['architecture']} | {_fmt(r['detected_within_24h'], 2)} | {_fmt(r['detected_within_168h'], 2)} "
+                      f"({_fmt(r['chance_within_168h'], 2)}) | {_fmt(r['detected_within_720h'], 2)} | {_fmt(r['detected_ever'], 2)} | {_fmt(r['median_delay_h'], 0)} |")
+    return md
+
+
+def _block_alarm_rate(dd, slices, n):
+    hits = [dd[sl][i:i + n].any() for sl in slices for i in range(0, sl.stop - sl.start - n + 1, n)]
+    return float(np.mean(hits)) if hits else float("nan")
+
+
+def effective_label_table(out_dir, scen, d, arch, dec, shown, y, runs, n_runs, B):
+    """O17 (A3): second label definition. Positive = compromised AND effect >= EFFECT_SIGMA_MIN sigma;
+    compromised windows below it are excluded (neither positive nor negative); negatives unchanged."""
+    pos = y & (d["effect_sigma"] >= EFFECT_SIGMA_MIN)
+    keep = ~y | pos
+    rows = []
+    for a in shown:
+        s, yy = arch[a][keep], pos[keep]
+        lo, hi = bootstrap_auc([FastAUC(s, yy, runs[keep])], n_runs, B=B, seed=4)
+        rows.append({"architecture": a, "auc": auc(s, yy), "auc_lo": lo, "auc_hi": hi,
+                     "recall": float(dec[a][pos].mean()) if pos.any() else float("nan"),
+                     "n_positive": int(pos.sum()), "n_excluded": int((y & ~pos).sum())})
+    _write_csv(out_dir / f"O17_effective_labels_{scen}.csv", rows)
+    md = [f"\n### O17 Effective-onset labels (positive only once the effect is ≥ {EFFECT_SIGMA_MIN:g}σ of sensor noise; "
+          f"{rows[0]['n_positive'] if rows else 0:,} positive, {rows[0]['n_excluded'] if rows else 0:,} compromised windows excluded)\n\n"
+          "| Architecture | AUC [95% CI] | Recall @ threshold |\n|---|---|---|"]
+    for r in rows:
+        md.append(f"| {r['architecture']} | {_fmt(r['auc'])} {_ci(r['auc_lo'], r['auc_hi'])} | {_fmt(r['recall'], 2)} |")
+    return md
+
+
 def report(results_dir, thresholds, out_dir, B=200, attribution=True):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -146,23 +300,33 @@ def report(results_dir, thresholds, out_dir, B=200, attribution=True):
         y = d["y"]
         cal = thresholds["scenarios"][scen]
         arch = architectures(d, cal["weights"])
+        v2 = "v2" in cal and has_v2(d)
+        if v2:
+            arch.update(architectures_v2(d, cal["v2"]))
+        mains = ["proposed"] + (["proposed_v2"] if v2 else [])
         dec = {a: np.nan_to_num(s, nan=-np.inf) > cal["thresholds"][a] for a, s in arch.items()}
         every = specs[0]["campaign"]["eval_every_h"]
         runs = d["run"]
         md.append(f"\n## {scen}\n\n{len(specs)} runs, {len(y):,} operation windows "
                   f"({int(y.sum()):,} compromised). Thresholds at {thresholds['fpr_target']:.0%} FPR "
                   f"from calibration ({cal['n_runs']} runs). Gate weights (cm, phys, learn) = {cal['weights']['proposed']}.\n")
+        if v2:
+            md.append("v2 configurations (tuned on the v2 calibration campaign): " + "; ".join(
+                f"{n}: inputs {c['inputs']}, weights {c['w']}, EWMA λ = {c['lambda']:g}" for n, c in cal["v2"].items()) + ".\n")
 
         # O1 main detection table + DeLong / bootstrap dAUC
+        n_runs = len(specs)
+        fast = {a: FastAUC(sc, y, runs) for a, sc in arch.items() if np.isfinite(sc).any()}
         rows = []
-        for a in ["proposed"] + BASELINES:
+        A_v2 = auc(arch["proposed_v2"], y) if v2 else float("nan")
+        for a in mains + BASELINES:
             s, dd = arch[a], dec[a]
             if not np.isfinite(s).any():
                 rows.append({"architecture": a, "note": "not run (scikit-learn not installed)"})
                 continue
             cm = confusion(dd, y)
             A = auc(s, y)
-            lo, hi = bootstrap_runs(runs, lambda ix: auc(s[ix], y[ix]), B=B)
+            lo, hi = bootstrap_auc([fast[a]], n_runs, B=B)
             neg_h = (~y).sum() * every
             fa = cm["fp"] / neg_h * 1000 if neg_h else float("nan")
             dl = detection_delay(d, dd, specs)
@@ -175,16 +339,22 @@ def report(results_dir, thresholds, out_dir, B=200, attribution=True):
                    "events_detected": f"{len(got)}/{len(dl)}"}
             if a != "proposed":
                 _, _, diff, z, p = delong(arch["proposed"], s, y)
-                blo, bhi = bootstrap_runs(runs, lambda ix: auc(arch["proposed"][ix], y[ix]) - auc(s[ix], y[ix]), B=B, seed=1)
+                blo, bhi = bootstrap_auc([fast["proposed"], fast[a]], n_runs, combine=lambda p, b: p - b, B=B, seed=1)
                 row.update({"dAUC_vs_proposed": -diff if np.isfinite(diff) else diff, "dAUC_boot_lo": -bhi, "dAUC_boot_hi": -blo, "delong_p": p})
+                if v2 and a != "proposed_v2":
+                    blo2, bhi2 = bootstrap_auc([fast["proposed_v2"], fast[a]], n_runs, combine=lambda p, b: p - b, B=B, seed=3)
+                    row.update({"dAUC_vs_v2": A - A_v2, "dAUC_v2_boot_lo": -bhi2, "dAUC_v2_boot_hi": -blo2})
             rows.append(row)
         _write_csv(out_dir / f"O1_detection_{scen}.csv", rows)
-        md.append("### O1 Detection (operation windows)\n\n| Architecture | Precision | Recall | F1 | AUC [95% CI] | FPR (test) | False alarms / 1,000 h | Median delay h [IQR] | Events detected | ΔAUC (baseline − proposed) [boot CI] (DeLong p) |\n|---|---|---|---|---|---|---|---|---|---|")
+        md.append("### O1 Detection (operation windows)\n\n| Architecture | Precision | Recall | F1 | AUC [95% CI] | FPR (test) | False alarms / 1,000 h | Median delay h [IQR] | Events detected | ΔAUC (baseline − proposed) [boot CI] (DeLong p) |"
+                  + (" ΔAUC (baseline − proposed_v2) [boot CI] |" if v2 else "") + "\n|---|---|---|---|---|---|---|---|---|---|" + ("---|" if v2 else ""))
         for r in rows:
             if "note" in r:
                 md.append(f"| {r['architecture']} | {r['note']} |||||||||")
                 continue
             dpart = "" if r["architecture"] == "proposed" else f"{_fmt(r['dAUC_vs_proposed'])} {_ci(r['dAUC_boot_lo'], r['dAUC_boot_hi'])} (p={_fmt(r['delong_p'], 4)})"
+            if v2:
+                dpart += " | " + (f"{_fmt(r['dAUC_vs_v2'])} {_ci(r['dAUC_v2_boot_lo'], r['dAUC_v2_boot_hi'])}" if "dAUC_vs_v2" in r else "")
             md.append(f"| {r['architecture']} | {_fmt(r['precision'], 2)} | {_fmt(r['recall'], 2)} | {_fmt(r['f1'], 2)} | "
                       f"{_fmt(r['auc'])} {_ci(r['auc_lo'], r['auc_hi'])} | {_fmt(100 * r['fpr_test'], 1)}% | "
                       f"{_fmt(r['false_alarms_per_1000h'], 1)} | {_fmt(r['median_delay_h'], 0)} [{_fmt(r['delay_q1'], 0)}–{_fmt(r['delay_q3'], 0)}] | "
@@ -201,7 +371,7 @@ def report(results_dir, thresholds, out_dir, B=200, attribution=True):
             return m
         lab = np.array([sub_label(k) if specs[k]["spec"]["mechanism"] else "none" for k in runs.tolist()], dtype=object)
         lab[~y] = "none"
-        cols5 = ["proposed", "cm_only", "phys_only"] + BASELINES
+        cols5 = mains + ["cm_only", "phys_only"] + BASELINES
         rows5 = []
         for m in sorted(set(lab) - {"none"}):
             mm = lab == m
@@ -217,7 +387,7 @@ def report(results_dir, thresholds, out_dir, B=200, attribution=True):
         # O8 / O4 operational cost
         pf_clean = (d["process_fault"] > 0.5) & ~y
         rows8 = []
-        for a in ["proposed", "gate_cm_phys"] + BASELINES:
+        for a in ["proposed", "gate_cm_phys"] + (ABLATION_V2[::-1] if v2 else []) + BASELINES:
             if not np.isfinite(arch[a]).any():
                 continue
             dd = dec[a]
@@ -258,13 +428,21 @@ def report(results_dir, thresholds, out_dir, B=200, attribution=True):
         rows10 = []
         for a in ABLATION:
             A = auc(arch[a], y)
-            lo, hi = bootstrap_runs(runs, lambda ix: auc(arch[a][ix], y[ix]), B=B, seed=2)
+            lo, hi = bootstrap_auc([fast[a]], n_runs, B=B, seed=2)
             rows10.append({"configuration": a, "auc": A, "auc_lo": lo, "auc_hi": hi,
-                           "recall_at_threshold": confusion(dec[a], y)["recall"], "dAUC_vs_full": A - full})
+                           "recall_at_threshold": confusion(dec[a], y)["recall"], "dAUC_vs_full": A - full,
+                           "reference": "proposed"})
+        if v2:
+            for a in ABLATION_V2:
+                A = auc(arch[a], y)
+                lo, hi = bootstrap_auc([FastAUC(arch[a], y, runs)], n_runs, B=B, seed=2)
+                rows10.append({"configuration": a, "auc": A, "auc_lo": lo, "auc_hi": hi,
+                               "recall_at_threshold": confusion(dec[a], y)["recall"], "dAUC_vs_full": A - A_v2,
+                               "reference": "proposed_v2"})
         _write_csv(out_dir / f"O10_ablation_{scen}.csv", rows10)
-        md.append("\n### O10 Ablation (identical windows)\n\n| Configuration | AUC [95% CI] | Recall @ threshold | ΔAUC vs proposed |\n|---|---|---|---|")
+        md.append("\n### O10 Ablation (identical windows)\n\n| Configuration | AUC [95% CI] | Recall @ threshold | ΔAUC vs full | Full |\n|---|---|---|---|---|")
         for r in rows10:
-            md.append(f"| {r['configuration']} | {_fmt(r['auc'])} {_ci(r['auc_lo'], r['auc_hi'])} | {_fmt(r['recall_at_threshold'], 2)} | {_fmt(r['dAUC_vs_full'])} |")
+            md.append(f"| {r['configuration']} | {_fmt(r['auc'])} {_ci(r['auc_lo'], r['auc_hi'])} | {_fmt(r['recall_at_threshold'], 2)} | {_fmt(r['dAUC_vs_full'])} | {r['reference']} |")
 
         # O12 learning (gated vs ungated soft-sensor error on CLEAN data, by hours since onset)
         hs = d["hours_since_onset"]
@@ -279,15 +457,24 @@ def report(results_dir, thresholds, out_dir, B=200, attribution=True):
                                    "mse_gated_median": float(np.median(d["err_gated"][m])),
                                    "mse_ungated_median": float(np.median(d["err_ungated"][m])),
                                    "gate_rejection_rate": float(1 - d["gate_ok"][m].mean())})
+                    if "err_gated_v2" in d:
+                        rows12[-1].update({"mse_gated_v2_median": float(np.median(d["err_gated_v2"][m])),
+                                           "gate_v2_rejection_rate": float(1 - d["gate_ok_v2"][m].mean())})
         _write_csv(out_dir / f"O12_learning_{scen}.csv", rows12)
         md.append("\n### O12 Gated vs ungated learning (soft-sensor squared error on clean data)\n\n| Origin | Hours since onset | Windows | Median error gated | Median error ungated | Gate rejection rate |\n|---|---|---|---|---|---|")
+        if rows12 and "mse_gated_v2_median" in rows12[0]:
+            md[-1] = md[-1].replace("| Gate rejection rate |\n|---|---|---|---|---|---|", "| Gate rejection rate | Median error gated v2 | Gate v2 rejection rate |\n|---|---|---|---|---|---|---|---|")
         for r in rows12:
-            md.append(f"| {r['origin']} | {r['hours_since_onset_from']:.0f}–{r['to']:.0f} | {r['n_windows']} | {r['mse_gated_median']:.4g} | {r['mse_ungated_median']:.4g} | {_fmt(r['gate_rejection_rate'], 2)} |")
+            v2part = f" {r['mse_gated_v2_median']:.4g} | {_fmt(r['gate_v2_rejection_rate'], 2)} |" if "mse_gated_v2_median" in r else ""
+            md.append(f"| {r['origin']} | {r['hours_since_onset_from']:.0f}–{r['to']:.0f} | {r['n_windows']} | {r['mse_gated_median']:.4g} | {r['mse_ungated_median']:.4g} | {_fmt(r['gate_rejection_rate'], 2)} |" + v2part)
 
         # O13 compute time and memory
         rows13 = []
-        for comp in ("ns_cm", "ns_phys", "ns_learn", "ns_sec", "ns_rel", "ns_cusum", "ns_learned"):
-            v = np.concatenate([t[comp] for t in L["timing"] if comp in t]) / 1e6
+        for comp in ("ns_cm", "ns_phys", "ns_learn", "ns_sec", "ns_rel", "ns_cusum", "ns_learned", "ns_phys_fa", "ns_learn2"):
+            parts = [t[comp] for t in L["timing"] if comp in t]
+            if not parts:
+                continue
+            v = np.concatenate(parts) / 1e6
             rows13.append({"component": comp[3:], "p50_ms": float(np.median(v)), "p99_ms": float(np.quantile(v, 0.99)), "max_ms": float(v.max())})
         rss = [m.get("peak_rss_mb") for m in L["manifests"] if m.get("peak_rss_mb") is not None]
         _write_csv(out_dir / f"O13_compute_{scen}.csv", rows13)
@@ -295,6 +482,13 @@ def report(results_dir, thresholds, out_dir, B=200, attribution=True):
         for r in rows13:
             md.append(f"| {r['component']} | {r['p50_ms']:.3f} | {r['p99_ms']:.3f} | {r['max_ms']:.3f} |")
         md.append(f"\nPeak worker memory (max over runs): {max(rss):.0f} MB.\n" if rss else "")
+
+        shown = [a for a in mains + BASELINES if np.isfinite(arch[a]).any()]
+        if any("magnitude_k" in s["spec"] for s in specs):
+            md += detectability_table(out_dir, scen, arch, dec, shown, y, lab, runs, specs)
+        md += event_tables(out_dir, scen, d, dec, shown, specs, every)
+        if "effect_sigma" in d:
+            md += effective_label_table(out_dir, scen, d, arch, dec, shown, y, runs, n_runs, B)
 
         if attribution:
             from .attribution import attribution_table
@@ -347,11 +541,13 @@ def summarize_environment(results_dir):
 
 
 def _write_csv(path, rows):
+    import csv
     if not rows:
         Path(path).write_text("")
         return
     keys = list(dict.fromkeys(k for r in rows for k in r))
-    lines = [",".join(keys)]
-    for r in rows:
-        lines.append(",".join("" if r.get(k) is None else (f"{r[k]:.6g}" if isinstance(r.get(k), float) else str(r.get(k))) for k in keys))
-    Path(path).write_text("\n".join(lines) + "\n")
+    with open(path, "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(keys)
+        for r in rows:
+            w.writerow(["" if r.get(k) is None else (f"{r[k]:.6g}" if isinstance(r.get(k), float) else r.get(k)) for k in keys])

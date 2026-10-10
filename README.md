@@ -15,7 +15,7 @@ cd simulator
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 pip freeze > requirements.lock            # exact versions, kept with the results
-python -m unittest discover -s tests -v   # 18 tests, ~10 s
+python -m unittest discover -s tests -v   # 26 tests, ~30 s
 git init && git add -A && git commit -m "UTM simulator"   # so manifests record a commit
 ```
 
@@ -46,6 +46,14 @@ python -m utmsim report --results results/test --thresholds thresholds.json --ou
 # e) robustness: model-mismatch sweep (same thresholds)
 for m in 0 2; do python -m utmsim run --campaign campaigns/mismatch_${m}x.toml --workers 14
   python -m utmsim report --results results/mismatch_${m}x --thresholds thresholds.json --out report_mismatch_${m}x; done
+```
+
+v2 (follow-up A2/A3 + B; `docs/models.md` §7): calibrate on `calibration_v2`, keeping the frozen v1
+entries, then freeze and run `test_v2` and `mismatch_v2_{0x,2x}`. Steps: `RUNBOOK.md` Step 12.
+
+```bash
+python -m utmsim calibrate --results results/calibration_v2 --base thresholds.json --out thresholds_v2.json
+python -m utmsim report --results results/test_v2 --thresholds thresholds_v2.json --out report_test_v2
 ```
 
 Cost measured on an Apple M3 Max: worst-case run (10,000 h, 1,000 Hz, 16 sensors/modality) about 40 s,
@@ -79,7 +87,7 @@ python -m utmsim verify --campaign campaigns/test.toml     # all runs present, c
 | `summary.json` | run spec, seeds, counts, corruption details |
 | `manifest.json` | code commit, environment (CPU, Python, numpy, scikit-learn), wall time, peak memory, sha256 of every file |
 
-`utmsim report` writes `report.md` + one CSV per output (O1, O5–O10, O12–O14); see
+`utmsim report` writes `report.md` + one CSV per output (O1, O5–O10, O12–O17); see
 `simulation_outputs_spec.md` for what each one feeds in the paper.
 
 ## 5. What is simulated

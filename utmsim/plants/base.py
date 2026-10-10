@@ -70,6 +70,7 @@ class Nominal:
     """Detector-side knowledge. Subclasses implement `residuals` and `soft_sensor`."""
 
     relation_groups: tuple = ()
+    fault_explainable: tuple = ()      # v2 (B3)
 
     def __init__(self):
         self.state = {}

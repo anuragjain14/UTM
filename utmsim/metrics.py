@@ -99,3 +99,48 @@ def wilson(k, n, z=1.96):
     c = (p + z * z / (2 * n)) / d
     h = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d
     return c - h, c + h
+
+
+class FastAUC:
+    """AUC under run-level bootstrap weights in O(N) per replicate.
+
+    Resampling whole runs with replacement is equivalent to weighting each window by how many
+    times its run was drawn. Scores are sorted once; each replicate is then a weighted
+    Mann-Whitney sum over tie groups (ties count 1/2), identical to `auc` on the concatenated
+    resample.
+    """
+
+    def __init__(self, scores, labels, runs):
+        s = np.asarray(scores, dtype=float)
+        ok = ~np.isnan(s)
+        self.ok = ok
+        _, self.group = np.unique(s[ok], return_inverse=True)
+        self.ngroups = int(self.group.max()) + 1 if ok.any() else 0
+        self.y = np.asarray(labels, dtype=bool)[ok]
+        self.runs = np.asarray(runs)[ok]
+
+    def __call__(self, run_weight):
+        w = np.asarray(run_weight, dtype=float)[self.runs]
+        wp = np.bincount(self.group, weights=w * self.y, minlength=self.ngroups)
+        wn = np.bincount(self.group, weights=w * ~self.y, minlength=self.ngroups)
+        P, N = wp.sum(), wn.sum()
+        if P == 0 or N == 0:
+            return float("nan")
+        neg_below = np.cumsum(wn) - wn
+        return float((wp * (neg_below + 0.5 * wn)).sum() / (P * N))
+
+
+def bootstrap_auc(fast_list, n_runs, combine=None, B=200, seed=0, alpha=0.05):
+    """Percentile CI over run-level bootstrap replicates for one AUC (or a combination of several,
+    e.g. a difference), using the same replicate weights for every term (paired)."""
+    rng = np.random.default_rng(seed)
+    vals = []
+    for _ in range(int(B)):
+        wts = np.bincount(rng.integers(n_runs, size=n_runs), minlength=n_runs)
+        a = [f(wts) for f in fast_list]
+        v = combine(*a) if combine else a[0]
+        if np.isfinite(v):
+            vals.append(v)
+    if not vals:
+        return float("nan"), float("nan")
+    return float(np.quantile(vals, alpha / 2)), float(np.quantile(vals, 1 - alpha / 2))

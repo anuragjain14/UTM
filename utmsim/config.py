@@ -27,6 +27,8 @@ DEFAULTS = {
         "warmup_every_h": 2.0,      # same spacing as operation, so step statistics match
         "mismatch": 1.0,            # generator-vs-nominal model mismatch scale (AC-4)
         "keep_raw": 0,              # raw windows kept per run (MR-4)
+        "severity_mode": "levels",  # "levels" (v1: low/medium/high) or "detectability" (v2, A2)
+        "magnitudes": [0.5, 1.0, 2.0, 4.0, 8.0],   # detectability mode: k x operating variability
     },
     "ranges": {                     # Table 2 of the manuscript
         "horizon_h": [1000.0, 10000.0],
@@ -117,6 +119,11 @@ def build_run_list(camp: dict) -> list:
                 "sensors_per_modality": int(rng.integers(rg["sensors_per_modality"][0], rg["sensors_per_modality"][1] + 1)),
                 "noise_frac": round(float(np.exp(rng.uniform(np.log(rg["noise_frac"][0]), np.log(rg["noise_frac"][1])))), 6),
             }
+            if mech and camp["campaign"]["severity_mode"] == "detectability":
+                # Drawn AFTER all v1 fields, so v1-mode run lists are unchanged.
+                ks = [float(k) for k in camp["campaign"]["magnitudes"]]
+                spec["magnitude_k"] = ks[int(rng.integers(len(ks)))]
+                spec["severity"] = f"k{spec['magnitude_k']:g}"
             runs.append(spec)
             gidx += 1
     return runs

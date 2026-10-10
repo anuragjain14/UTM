@@ -17,7 +17,7 @@ import numpy as np
 from . import __version__
 from .corruption import Corruption
 from .detectors import (HAVE_SKLEARN, CrossModal, Cusum, GatedLearner, Learned, Physics,
-                        Reliability, Security, features, robust_std)
+                        PhysicsFA, Reliability, Security, features, robust_std)
 from .io import environment, git_commit, manifest, write_csv_gz, write_json
 from .plants import make
 from .rng import run_streams, stream_seeds
@@ -38,7 +38,25 @@ def _raw_scores(det, r, res, x, y, f):
     t0 = time.perf_counter_ns(); out["rel_vote"], out["rel_cusum"] = det["rel"].score(r); t["rel"] = time.perf_counter_ns() - t0
     t0 = time.perf_counter_ns(); out["cusum"] = det["cusum"].score(r); t["cusum"] = time.perf_counter_ns() - t0
     t0 = time.perf_counter_ns(); out["pca"], out["iforest"], out["ocsvm"] = det["learned"].score(f); t["learned"] = time.perf_counter_ns() - t0
+    # v2 additions (appended so that v1 columns keep their order)
+    t0 = time.perf_counter_ns(); out["phys_fa"], _ = det["phys_fa"].score(res); t["phys_fa"] = time.perf_counter_ns() - t0
+    t0 = time.perf_counter_ns(); out["learn2"] = det["learn"].score2(x, y); t["learn2"] = time.perf_counter_ns() - t0
     return out, t
+
+
+def effect_sigma(clean, obs, sensors):
+    """Size of the actual corruption effect in this window, in units of sensor noise: the largest
+    change of a sensor's window median or spread caused by the corruption (A3)."""
+    eff = 0.0
+    for m, x in obs.items():
+        c = clean[m]
+        if x is c or np.array_equal(x, c):
+            continue
+        sig = np.maximum(sensors[m].sigma, 1e-12)
+        lvl = np.abs(np.median(x, axis=1) - np.median(c, axis=1)) / sig
+        spr = np.abs(x.std(axis=1) - c.std(axis=1)) / sig
+        eff = max(eff, float(np.max(lvl)), float(np.max(spr)))
+    return eff
 
 
 def run_one(spec, camp, out_dir, repo_dir=None):
@@ -92,6 +110,8 @@ def run_one(spec, camp, out_dir, repo_dir=None):
     det["rel"].fit(W[:n_fit])
     det["cusum"].fit(W[:n_fit])
     det["learned"].fit(FEAT[:n_fit])
+    det["phys_fa"] = PhysicsFA(det["phys"], nominal.fault_explainable)
+    det["phys_fa"].fit(RES[:n_fit])
     norm_raw = [_raw_scores(det, W[k], RES[k], *XY[k], FEAT[k])[0] for k in range(n_fit, len(warm))]
     keys = list(norm_raw[0])
     norm = {}
@@ -114,9 +134,12 @@ def run_one(spec, camp, out_dir, repo_dir=None):
         raw, tm = _raw_scores(det, obs, res, x, y, f)
         z = {k: (raw[k] - norm[k][0]) / norm[k][1] for k in keys}
         gate_ok = bool(np.mean([z["cm"], z["phys"]]) < GatedLearner.GATE_Z)
+        # v2 a-priori gate rule (fixed before any v2 run): cross-modal, fault-aware physics, voting
+        gate_ok2 = bool(np.mean([z["cm"], z["phys_fa"], z["rel_vote"]]) < GatedLearner.GATE_Z)
         xc, yc = nominal.soft_sensor(clean, ctx)
         e_g, e_u = det["learn"].errors(xc, yc)
-        det["learn"].step(x, y, gate_ok)
+        e_g2 = det["learn"].error2(xc, yc)
+        det["learn"].step(x, y, gate_ok, gate_ok2)
         row = {
             "run_id": spec["run_id"], "idx": idx, "t_h": float(t),
             "compromised": bool(comp),
@@ -125,6 +148,8 @@ def run_one(spec, camp, out_dir, repo_dir=None):
             "process_fault": bool(plant.fault_onset is not None and t >= plant.fault_onset),
             "hours_since_onset": (float(t) - onset) if (onset is not None and t >= onset) else None,
             "gate_ok": gate_ok, "err_gated": e_g, "err_ungated": e_u,
+            "gate_ok_v2": gate_ok2, "err_gated_v2": e_g2,
+            "effect_sigma": effect_sigma(clean, obs, plant.sensors) if comp else 0.0,
         }
         for k in keys:
             row["z_" + k] = z[k]
@@ -138,9 +163,11 @@ def run_one(spec, camp, out_dir, repo_dir=None):
     # ---- outputs -----------------------------------------------------------------------------
     run_dir = Path(out_dir) / spec["scenario"] / spec["run_id"]
     run_dir.mkdir(parents=True, exist_ok=True)
-    header = (["run_id", "idx", "t_h", "compromised", "origin", "mechanism", "process_fault",
-               "hours_since_onset", "gate_ok", "err_gated", "err_ungated"]
-              + ["z_" + k for k in keys] + [f"f{j}" for j in range(len(rows[0]) - 11 - len(keys))])
+    base_cols = ["run_id", "idx", "t_h", "compromised", "origin", "mechanism", "process_fault",
+                 "hours_since_onset", "gate_ok", "err_gated", "err_ungated",
+                 "gate_ok_v2", "err_gated_v2", "effect_sigma"]
+    n_feat = sum(1 for k in rows[0] if k.startswith("f") and k[1:].isdigit())
+    header = base_cols + ["z_" + k for k in keys] + [f"f{j}" for j in range(n_feat)]
     write_csv_gz(run_dir / "windows.csv.gz", header, rows)
     write_csv_gz(run_dir / "timing.csv.gz", list(trows[0]), trows)
     files = [run_dir / "windows.csv.gz", run_dir / "timing.csv.gz"]

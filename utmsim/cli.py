@@ -25,6 +25,7 @@ def main(argv=None):
     c.add_argument("--results", required=True, help="results/<calibration campaign>")
     c.add_argument("--out", default="thresholds.json")
     c.add_argument("--fpr", type=float, default=0.01)
+    c.add_argument("--base", default=None, help="frozen thresholds.json: keep its v1 entries, add v2 only")
 
     p = sub.add_parser("report", help="paper tables from a TEST campaign")
     p.add_argument("--results", required=True)
@@ -50,9 +51,13 @@ def main(argv=None):
         return 1 if n_err else 0
     if a.cmd == "calibrate":
         from .report import calibrate
-        th = calibrate(a.results, a.fpr)
+        base = json.loads(Path(a.base).read_text()) if a.base else None
+        th = calibrate(a.results, a.fpr, base)
         write_json(a.out, th)
         print(f"wrote {a.out}: " + ", ".join(f"{s}: weights {v['weights']['proposed']}" for s, v in th["scenarios"].items()))
+        for s, v in th["scenarios"].items():
+            for n, cfg in v.get("v2", {}).items():
+                print(f"  {s} {n}: inputs {cfg['inputs']} weights {cfg['w']} lambda {cfg['lambda']:g} (calibration AUC {cfg['calibration_auc']:.3f})")
         return 0
     if a.cmd == "report":
         from .report import report

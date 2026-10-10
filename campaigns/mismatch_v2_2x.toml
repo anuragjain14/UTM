@@ -1,0 +1,16 @@
+# v2 model-mismatch sweep (2x nominal-model mismatch). Uses the same frozen thresholds.json and
+# thresholds_v2.json as test_v2; v1 and v2 are scored on the same windows. Run after test_v2.
+[campaign]
+name = "mismatch_v2_2x"
+kind = "test"
+base_seed = 6002
+mismatch = 2.0
+severity_mode = "detectability"
+magnitudes = [0.5, 1.0, 2.0, 4.0, 8.0]
+
+[scenarios.motor]
+runs = 300
+[scenarios.reactor]
+runs = 300
+[scenarios.robot]
+runs = 300

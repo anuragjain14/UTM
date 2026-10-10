@@ -1,7 +1,8 @@
 """Detectors (requirements §6). All are fitted only on clean commissioning (warm-up) windows of the
 same run and never receive labels (requirement T-6).
 
-Proposed framework: CrossModal (Algorithm 1), Physics (Algorithm 2), GatedLearner (Algorithm 3).
+Proposed framework: CrossModal (Algorithm 1), Physics (Algorithm 2), GatedLearner (Algorithm 3);
+v2 adds PhysicsFA (fault-aware physics) and a second gated learner copy.
 Baselines: Security (B2 path), Reliability (B3 path), Cusum (B7), PCAResidual (B6),
 Isolation Forest / One-class SVM (B4/B5, scikit-learn if installed).
 """
@@ -93,6 +94,46 @@ class Physics:
         return float(np.mean(list(per.values()))), per
 
 
+class PhysicsFA:
+    """v2 (B3) fault-aware physics validation. Per relation group, the normalized residuals
+    u = (r - c)/s are split into a COMMON-MODE part (median over the group's entries: all sensors
+    shift together) and a DIFFERENTIAL part (u - common: one sensor departs from the others).
+    In groups that a known process fault shifts consistently (`fault_explainable`), common-mode
+    shifts are attributed to the process and not scored; differential departures always are.
+    Group score = max(max |differential| / s_diff, |common| / s_common [if not fault-explainable]);
+    total = mean over groups."""
+
+    def __init__(self, base, fault_explainable):
+        self.base = base                       # fitted Physics (supplies c, s)
+        self.fe = set(fault_explainable)
+
+    def _split(self, res, g):
+        u = (res[g] - self.base.c[g]) / self.base.s[g]
+        cm = float(np.median(u))
+        return u - cm, cm
+
+    def fit(self, residual_dicts):
+        self.s_df, self.s_cm = {}, {}
+        for g in self.base.groups:
+            D, C = [], []
+            for r in residual_dicts:
+                d, c = self._split(r, g)
+                D.append(d); C.append(c)
+            D, C = np.stack(D), np.array(C)
+            sd = robust_std(D, axis=0)
+            self.s_df[g] = np.maximum(sd, max(0.1 * float(np.median(sd)), 1e-6))
+            self.s_cm[g] = max(float(robust_std(C)), 1e-6)
+
+    def score(self, res):
+        per = {}
+        for g in self.base.groups:
+            d, c = self._split(res, g)
+            diff = float(np.max(np.abs(d) / self.s_df[g])) if len(d) > 1 else 0.0
+            com = 0.0 if g in self.fe else abs(c) / self.s_cm[g]
+            per[g] = max(diff, com)
+        return float(np.mean(list(per.values()))), per
+
+
 class GatedLearner:
     """Algorithm 3: soft-sensor linear model, normalized-LMS updates with an EWC penalty
     lambda * sum F_i (theta_i - theta*_i)^2 (Kirkpatrick et al. 2017). Two copies run side by
@@ -109,6 +150,7 @@ class GatedLearner:
         self.F = np.diag(A) / len(y)
         self.F = self.F / max(self.F.max(), 1e-12)
         self.gated = self.theta_star.copy()
+        self.gated2 = self.theta_star.copy()     # v2 copy, gated by the v2 a-priori rule
         self.ungated = self.theta_star.copy()
         r = y - X @ self.theta_star
         self.res_c, self.res_s = float(np.median(r)), float(max(robust_std(r), 1e-9))
@@ -120,13 +162,21 @@ class GatedLearner:
     def score(self, x, y):
         return abs((y - x @ self.gated) - self.res_c) / self.res_s
 
-    def step(self, x, y, gate_ok):
+    def score2(self, x, y):
+        return abs((y - x @ self.gated2) - self.res_c) / self.res_s
+
+    def step(self, x, y, gate_ok, gate_ok2=None):
         if gate_ok:
             self.gated = self._update(self.gated, x, y)
+        if gate_ok2 if gate_ok2 is not None else gate_ok:
+            self.gated2 = self._update(self.gated2, x, y)
         self.ungated = self._update(self.ungated, x, y)
 
     def errors(self, x_clean, y_clean):
         return float((x_clean @ self.gated - y_clean) ** 2), float((x_clean @ self.ungated - y_clean) ** 2)
+
+    def error2(self, x_clean, y_clean):
+        return float((x_clean @ self.gated2 - y_clean) ** 2)
 
 
 # --------------------------------------------------------------------------------------------

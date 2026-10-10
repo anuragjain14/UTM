@@ -1,0 +1,16 @@
+# v2 TEST campaign (follow-up B + A2/A3). FREEZE the code commit, this file and thresholds_v2.json
+# BEFORE running it (G4). Scores v1 (frozen thresholds) and v2 on the same windows (paired, G5).
+[campaign]
+name = "test_v2"
+kind = "test"
+base_seed = 5002
+mismatch = 1.0
+severity_mode = "detectability"
+magnitudes = [0.5, 1.0, 2.0, 4.0, 8.0]
+
+[scenarios.motor]
+runs = 1000
+[scenarios.reactor]
+runs = 1000
+[scenarios.robot]
+runs = 1000

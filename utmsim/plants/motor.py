@@ -95,6 +95,8 @@ class MotorPlant(Plant):
 
 class MotorNominal(Nominal):
     relation_groups = ("R1_current_speed", "R2_acoustic_vibration", "R3_thermal", "R4_vibration_speed")
+    # v2 (B3): relations that a known process fault (P1/P2/P3) shifts consistently across sensors
+    fault_explainable = ("R3_thermal", "R4_vibration_speed")
 
     def __init__(self):
         super().__init__()

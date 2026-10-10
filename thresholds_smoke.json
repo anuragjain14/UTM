@@ -1,0 +1,118 @@
+{
+  "fpr_target": 0.01,
+  "scenarios": {
+    "motor": {
+      "calibration_auc_proposed": 0.7537068160597572,
+      "campaign_sha256": [
+        "1de6500cd7c5651b0fedb93ab39033cf459eac0736a2c393fa5a070a83dbe1c8"
+      ],
+      "n_negative_windows": 150,
+      "n_runs": 4,
+      "n_windows": 507,
+      "thresholds": {
+        "B1_separated": 2212171.0275158677,
+        "B2_security": 9.450269594192482,
+        "B3_reliability": 2212168.5582051454,
+        "B4_iforest": 6.488891248702992,
+        "B5_ocsvm": 5.3416900634765625,
+        "B6_pca": 16.466032257080055,
+        "B7_cusum": 14.81673105239867,
+        "cm_only": 5.223621878623955,
+        "gate_cm_phys": 6.722782320976236,
+        "learn_only": 11.96042384147644,
+        "phys_R1_current_speed": 3.153985579013823,
+        "phys_R2_acoustic_vibration": 5.224678401947017,
+        "phys_R3_thermal": 5.862725653648375,
+        "phys_R4_vibration_speed": 4.19720604419708,
+        "phys_only": 6.722782320976236,
+        "proposed": 6.722782320976236
+      },
+      "weights": {
+        "gate_cm_phys": [
+          0.0,
+          1.0
+        ],
+        "proposed": [
+          0.0,
+          1.0,
+          0.0
+        ]
+      }
+    },
+    "reactor": {
+      "calibration_auc_proposed": 0.610238700288873,
+      "campaign_sha256": [
+        "1de6500cd7c5651b0fedb93ab39033cf459eac0736a2c393fa5a070a83dbe1c8"
+      ],
+      "n_negative_windows": 447,
+      "n_runs": 4,
+      "n_windows": 550,
+      "thresholds": {
+        "B1_separated": 45.886669692993166,
+        "B2_security": 1.9677766275405888,
+        "B3_reliability": 45.886669692993166,
+        "B4_iforest": 1.3823545932769776,
+        "B5_ocsvm": 4.678951311111452,
+        "B6_pca": 7.033507137298585,
+        "B7_cusum": 30.281122703552246,
+        "cm_only": 3.307346963882447,
+        "gate_cm_phys": 27.923378894329073,
+        "learn_only": 5.050276432037355,
+        "phys_R1_mass_balance": 3.265775017738347,
+        "phys_R2_pressure_temperature": 66.07899322509766,
+        "phys_R3_coolant_controller": 16.132361698150646,
+        "phys_only": 37.15056266784668,
+        "proposed": 27.923378894329073
+      },
+      "weights": {
+        "gate_cm_phys": [
+          0.25,
+          0.75
+        ],
+        "proposed": [
+          0.25,
+          0.75,
+          0.0
+        ]
+      }
+    },
+    "robot": {
+      "calibration_auc_proposed": 0.664448164089484,
+      "campaign_sha256": [
+        "1de6500cd7c5651b0fedb93ab39033cf459eac0736a2c393fa5a070a83dbe1c8"
+      ],
+      "n_negative_windows": 204,
+      "n_runs": 4,
+      "n_windows": 573,
+      "thresholds": {
+        "B1_separated": 2055.129180908203,
+        "B2_security": 2055.129180908203,
+        "B3_reliability": 0.0,
+        "B4_iforest": 6.439119815826416,
+        "B5_ocsvm": 0.9165430068969727,
+        "B6_pca": 51.79079433441162,
+        "B7_cusum": 221.20494186401368,
+        "cm_only": 6.56811233758926,
+        "gate_cm_phys": 7.173770666122436,
+        "learn_only": 34.66720573425293,
+        "phys_R1_kinematics": 27.46541488647461,
+        "phys_R2_dynamics": 7.675649814605713,
+        "phys_R3_payload": 2.3013376605510705,
+        "phys_only": 7.173770666122436,
+        "proposed": 7.173770666122436
+      },
+      "weights": {
+        "gate_cm_phys": [
+          0.0,
+          1.0
+        ],
+        "proposed": [
+          0.0,
+          1.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "source": "results/smoke"
+}

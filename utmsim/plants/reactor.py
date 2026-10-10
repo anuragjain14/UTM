@@ -88,6 +88,8 @@ class ReactorPlant(Plant):
 
 class ReactorNominal(Nominal):
     relation_groups = ("R1_mass_balance", "R2_pressure_temperature", "R3_coolant_controller")
+    # v2 (B3): relations that a known process fault (P1/P2/P3) shifts consistently across sensors
+    fault_explainable = ("R3_coolant_controller",)
 
     def __init__(self):
         super().__init__()

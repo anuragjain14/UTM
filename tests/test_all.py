@@ -208,6 +208,126 @@ class TestSharding(unittest.TestCase):
         self.assertEqual(len(ids), len(set(ids)))
 
 
+class TestV2(unittest.TestCase):
+    """Follow-up B (B1-B3) and A2/A3 additions."""
+
+    def test_ewma_restarts_per_run(self):
+        from utmsim.v2 import ewma_by_run
+        rng = np.random.default_rng(0)
+        x, runs = rng.normal(size=40), np.repeat([0, 1, 2], [10, 25, 5])
+        ref, s = [], 0.0
+        for i in range(len(x)):
+            s = (0.0 if i == 0 or runs[i] != runs[i - 1] else s)
+            s = 0.2 * x[i] + 0.8 * s
+            ref.append(s)
+        np.testing.assert_allclose(ewma_by_run(x, runs, 0.2), ref)
+        np.testing.assert_array_equal(ewma_by_run(x, runs, 1.0), x)
+
+    def test_simplex_grid(self):
+        from utmsim.v2 import simplex
+        g = simplex(5)
+        self.assertEqual(len(g), 70)
+        self.assertEqual(len(simplex(3)), 15)
+        self.assertTrue(all(abs(sum(w) - 1) < 1e-12 for w in g))
+
+    def test_phys_fa_ignores_common_mode_only_where_explainable(self):
+        from types import SimpleNamespace
+        from utmsim.detectors import PhysicsFA
+        rng = np.random.default_rng(1)
+        base = SimpleNamespace(groups=["G1", "G2"], c={"G1": np.zeros(4), "G2": np.zeros(4)},
+                               s={"G1": np.ones(4), "G2": np.ones(4)})
+        fa = PhysicsFA(base, fault_explainable=["G1"])
+        fa.fit([{g: rng.normal(size=4) for g in base.groups} for _ in range(200)])
+        quiet = {g: np.zeros(4) for g in base.groups}
+        common = {"G1": np.full(4, 10.0), "G2": np.zeros(4)}
+        diff = {"G1": np.array([10.0, 0, 0, 0]), "G2": np.zeros(4)}
+        _, pq = fa.score(quiet)
+        _, pc = fa.score(common)
+        _, pd = fa.score(diff)
+        self.assertAlmostEqual(pc["G1"], pq["G1"])               # process-like shift: not scored
+        self.assertGreater(pd["G1"], 5.0)                          # one sensor departs: scored
+        _, pc2 = fa.score({"G1": np.zeros(4), "G2": np.full(4, 10.0)})
+        self.assertGreater(pc2["G2"], 5.0)                         # not explainable: scored
+
+    def test_detectability_magnitude_scales_with_k(self):
+        mags = {}
+        for k in (2.0, 4.0):
+            sp = spec_for("motor", mechanism="A5", origin="adversarial", severity="k", onset_h=100.0, magnitude_k=k)
+            plant, nom = make(sp, np.random.default_rng(0), 1.0)
+            cr = Corruption(sp, plant, nom, np.random.default_rng(3))
+            rng = np.random.default_rng(7)
+            for t in range(0, 100, 10):
+                true, ctx = plant.true_window(float(t), 500.0, 128, rng)
+                cr.observe_clean(float(t), plant.measure(true, rng))
+            true, ctx = plant.true_window(150.0, 500.0, 128, rng)
+            clean = plant.measure(true, rng)
+            out, comp = cr.apply(clean, ctx, 150.0)
+            self.assertTrue(comp)
+            np.testing.assert_allclose(out[cr.mod][cr.idx] - clean[cr.mod][cr.idx], cr.mag)
+            self.assertAlmostEqual(abs(cr.mag), k * cr.op_ref)
+            mags[k] = cr.op_ref
+        self.assertAlmostEqual(mags[2.0], mags[4.0])               # same reference unit, magnitude x2
+
+    def test_detectability_mode_keeps_v1_run_fields(self):
+        camp = C.load_campaign(SMOKE)
+        v1 = C.build_run_list(camp)
+        camp["campaign"]["severity_mode"] = "detectability"
+        v2 = C.build_run_list(camp)
+        for a, b in zip(v1, v2):
+            self.assertEqual({k: v for k, v in a.items() if k != "severity"},
+                             {k: v for k, v in b.items() if k not in ("severity", "magnitude_k")})
+            self.assertEqual("magnitude_k" in b, bool(b["mechanism"]))
+
+    def test_effect_sigma(self):
+        from types import SimpleNamespace
+        from utmsim.engine import effect_sigma
+        rng = np.random.default_rng(2)
+        clean = {"a": rng.normal(size=(3, 256))}
+        sensors = {"a": SimpleNamespace(sigma=np.ones(3))}
+        self.assertEqual(effect_sigma(clean, {"a": clean["a"]}, sensors), 0.0)
+        obs = {"a": clean["a"].copy()}
+        obs["a"][1] += 2.0
+        self.assertAlmostEqual(effect_sigma(clean, obs, sensors), 2.0, places=9)
+
+    def test_event_and_auc_helpers(self):
+        from utmsim.report import _auc_vs_neg, _block_alarm_rate
+        rng = np.random.default_rng(3)
+        neg, pos = rng.normal(size=300), rng.normal(0.7, 1, size=100)
+        s = np.r_[neg, pos]
+        y = np.r_[np.zeros(300, bool), np.ones(100, bool)]
+        self.assertAlmostEqual(_auc_vs_neg(np.sort(neg), pos), auc(s, y), places=12)
+        dd = np.zeros(20, bool)
+        dd[[3, 15]] = True
+        self.assertAlmostEqual(_block_alarm_rate(dd, [slice(0, 10), slice(10, 20)], 5), 0.5)
+
+    def test_v2_calibration_keeps_frozen_v1(self):
+        from utmsim.report import calibrate, report
+        from utmsim.runner import run_campaign
+        from utmsim.v2 import VARIANTS
+        camp = C.load_campaign(SMOKE)
+        camp["campaign"]["severity_mode"] = "detectability"
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            root = tmp / "smoke"
+            self.assertEqual(run_campaign(camp, root, workers=1, log=lambda *_: None), 0)
+            v1 = calibrate(root)
+            for sc in v1["scenarios"].values():
+                sc.pop("v2")
+                sc["thresholds"] = {k: v for k, v in sc["thresholds"].items() if k not in VARIANTS}
+            th = calibrate(root, base=v1)
+            for name, sc in th["scenarios"].items():
+                self.assertEqual(sc["weights"], v1["scenarios"][name]["weights"])
+                for a, t in v1["scenarios"][name]["thresholds"].items():
+                    self.assertEqual(sc["thresholds"][a], t)
+                self.assertEqual(set(sc["v2"]), {"proposed_v2", "v2_no_accum", "v2_no_fa", "v2_no_hybrid"})
+                self.assertEqual(sc["v2"]["v2_no_accum"]["lambda"], 1.0)
+            text = report(root, th, tmp / "rep", B=10).read_text()
+            for tag in ("proposed_v2", "O15 Detectability", "O16 Event-level", "O17 Effective-onset"):
+                self.assertIn(tag, text)
+        finally:
+            shutil.rmtree(tmp)
+
+
 class TestSmokePipeline(unittest.TestCase):
     """T-7: the whole pipeline runs (smoke numbers are not results)."""
 

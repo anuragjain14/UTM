@@ -88,3 +88,42 @@ Q3 baselines as above · Q4 1% FPR on calibration · Q5 measured compute time, n
 Q6 availability impact and safety exposure proxies (O8) · Q7 linear soft sensor with exact EWC ·
 Q8 no matplotlib (figure data as CSV) · Q9 code in `UnifiedThreatModeling/simulator/` ·
 Q10 own machines or cloud · Q11 K0–K2.
+
+## 7. v2: follow-up A2/A3 and revised architecture B1–B3 (added 2026-10-09)
+
+Declared before any v2 run. v1 code paths, columns and outputs are unchanged; the new columns are
+appended, and v1-mode run lists are identical (the v2 draw happens after all v1 fields).
+
+**A2 detectability severity** (`severity_mode = "detectability"`, `magnitudes = [0.5, 1, 2, 4, 8]`):
+the magnitude is k × the affected sensors' normal operating variability: the median, over those
+sensors, of the std of their clean window medians before onset. It is floored at the sensor noise σ and
+fixed at the first corrupted window. `severity` becomes `k<value>` and `magnitude_k` is stored in
+the run spec. The stuck-at probability uses min(k, 6) like the v1 severity scale.
+
+**A3 effect size and event metrics:** `effect_sigma` per window = the largest change, caused by the
+corruption, in any sensor's window median or spread, in units of that sensor's noise σ.
+- *Effective onset* = the first compromised window with `effect_sigma` ≥ 1.
+- O16: events detected within 24 / 168 / 720 h of onset and of effective onset. Chance level = measured
+  fraction of W-hour blocks of uncorrupted runs with ≥ 1 alarm.
+- O17: AUC and recall with the second label definition (compromised windows below 1σ are excluded).
+
+**B3 fault-aware physics** (`PhysicsFA`): per relation group the normalized residuals split into a
+common-mode part (group median) and a differential part. In groups that a known process fault shifts
+consistently (`Nominal.fault_explainable`: motor R3 thermal + R4 vibration–speed for bearing wear; reactor
+R3 coolant–controller for fouling; robot R2 dynamics for friction), the common-mode part is not scored.
+Differential departures are always scored.
+
+**v2 learner gate** (fixed a priori, like v1): update only when mean(z_cm, z_phys_fa, z_rel_vote) < 3.
+It runs as a third learner copy (`err_gated_v2`, `gate_ok_v2`, score `learn2`) beside the v1 gated and
+ungated copies.
+
+**B2 hybrid composite and B1 accumulation** (`v2.py`): proposed_v2 = EWMA_λ of
+w·(z_cm, z_phys_fa, z_learn2, z_rel_vote, z_pca), restarted per run with s₀ = 0.
+- Weights come from the step-1/4 simplex (70 vectors) and λ ∈ {1, 0.5, 0.2, 0.1, 0.05}. Both are chosen
+  by window AUC on `calibration_v2` only, with the threshold at 1% FPR.
+- Ablations are tuned the same way:
+  - `v2_no_accum` (λ = 1);
+  - `v2_no_fa` (v1 physics instead of fault-aware);
+  - `v2_no_hybrid` (cm, phys_fa, learn2 only; 15 weight vectors).
+- `calibrate --base thresholds.json` copies the v1 weights and thresholds unchanged, so on the v2
+  test campaign the v1 method and baselines are scored exactly as frozen in v1.

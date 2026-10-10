@@ -17,13 +17,15 @@ class Corruption:
         self.mech = spec["mechanism"]
         self.origin = spec["origin"]
         self.onset = float(spec["onset_h"])
-        self.S = SEVERITY[spec["severity"]]
+        self.k = spec.get("magnitude_k")                 # v2 detectability mode (A2)
+        self.S = float(self.k) if self.k is not None else SEVERITY[spec["severity"]]
         self.knowledge = spec.get("attacker_knowledge")
         self.mode = spec.get("attack_mode")
         self.rng = rng
         self.nominal = nominal
         self.mod = plant.target_modality[self.mech]
         sa = plant.sensors[self.mod]
+        self._sigma = sa.sigma
         n_s = sa.n
         if self.mech in ("A3",) or (self.mech == "A4" and self.knowledge in ("K1", "K2")):
             self.idx = np.arange(n_s)                       # whole modality
@@ -32,13 +34,15 @@ class Corruption:
         else:
             self.idx = np.array([int(rng.integers(n_s))])
         self.ref = float(max(np.median(sa.sigma), 0.005 * sa.span))    # per-sensor reference unit
-        self.mag = 2.0 * self.S * self.ref * (1 if rng.random() < 0.5 else -1)
+        self.sign = 1 if rng.random() < 0.5 else -1
+        self.mag = 2.0 * self.S * self.ref * self.sign   # v1 unit; replaced at onset in detectability mode
+        self.hist = []                                   # clean medians of affected sensors (A2)
         self.tau = float(rng.uniform(300.0, 2000.0))     # natural (or mimicked) time constant
         self.T_ramp = float(rng.uniform(200.0, 2000.0))  # naive attack ramp duration
         self.daily = float(rng.uniform(0.05, 0.15))      # natural drift: temperature coefficient
         self.daily_phase = float(rng.uniform(0, 2 * np.pi))
         self.gain_step = 0.02 * self.S * (1 if rng.random() < 0.5 else -1)
-        self.p_stuck = 0.1 + 0.3 * self.S / 6.0
+        self.p_stuck = 0.1 + 0.3 * min(self.S, 6.0) / 6.0
         self.record_at_h = None                          # A3: warm-up window to record
         self.recorded = None
         self.last_med = None
@@ -54,6 +58,21 @@ class Corruption:
         if self.record_at_h is not None and abs(t_h - self.record_at_h) < 1e-9:
             self.recorded = readings[self.mod].copy()
         self.last_med = np.median(readings[self.mod], axis=1)
+        if self.k is not None:
+            self.hist.append(self.last_med[self.idx])
+
+    def _set_operating_magnitude(self, sigma):
+        """Detectability mode: magnitude = k x the affected sensors' operating variability (std of
+        clean window medians before onset), floored at the sensor noise."""
+        if self.k is None or getattr(self, "_mag_set", False):
+            return
+        if len(self.hist) >= 3:
+            op = float(np.median(np.std(np.vstack(self.hist), axis=0)))
+        else:
+            op = 0.0
+        self.op_ref = max(op, float(np.median(sigma)), 1e-12)
+        self.mag = self.k * self.op_ref * self.sign
+        self._mag_set = True
 
     # ---- laws -----------------------------------------------------------------------------
     def natural_drift(self, dt_h, t_h):
@@ -65,6 +84,7 @@ class Corruption:
         if t_h < self.onset:
             self.observe_clean(t_h, readings)
             return readings, False
+        self._set_operating_magnitude(self._sigma)
         out = {m: v.copy() for m, v in readings.items()}
         x = out[self.mod]
         i = self.idx

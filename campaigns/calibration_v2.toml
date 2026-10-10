@@ -1,0 +1,19 @@
+# v2 CALIBRATION campaign (follow-up B + A2/A3). Used only to tune the v2 configurations
+# (weights, EWMA lambda, thresholds at 1% FPR). v1 weights and thresholds are NOT re-tuned:
+# `calibrate --base thresholds.json` copies them unchanged from the frozen v1 file.
+# Severity in detectability units: magnitude = k x the sensor's normal operating variability.
+# Seeds are disjoint from every v1 campaign and from test_v2 (AC-5).
+[campaign]
+name = "calibration_v2"
+kind = "calibration"
+base_seed = 4001
+mismatch = 1.0
+severity_mode = "detectability"
+magnitudes = [0.5, 1.0, 2.0, 4.0, 8.0]
+
+[scenarios.motor]
+runs = 300
+[scenarios.reactor]
+runs = 300
+[scenarios.robot]
+runs = 300

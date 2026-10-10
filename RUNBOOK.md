@@ -41,7 +41,7 @@ pip install -r requirements.txt && pip freeze > requirements.lock
 python -m unittest discover -s tests
 ```
 
-Expect: `Ran 18 tests … OK`. **Stop here if anything fails** and send me the output.
+Expect: `Ran 26 tests … OK`. **Stop here if anything fails** and send me the output.
 
 ## Step 3: Start version control (once)
 
@@ -147,9 +147,39 @@ Send me: `report_test/report.md` (plus `report_mismatch_0x/2x/report.md` if you 
 `logs/code_commit.txt`. I'll update §3.6 and §4 of the paper **only** from those reports. Keep the
 `.tar.gz` safe: it's the evidence behind every number (and later goes to Zenodo).
 
----
+## Step 12: v2 campaigns (follow-up A2/A3 + B; about 3 h, mostly unattended)
 
-## Troubleshooting
+Run from the **git repo** so every manifest records the frozen commit (not `-dirty`). `thresholds.json`
+(v1) must be present and unchanged.
+
+```bash
+python -m unittest discover -s tests            # expect: Ran 26 tests ... OK
+caffeinate -dimsu python -m utmsim run --campaign campaigns/calibration_v2.toml --workers 14 2>&1 | tee logs/calibration_v2.log
+python -m utmsim verify --campaign campaigns/calibration_v2.toml
+python -m utmsim calibrate --results results/calibration_v2 --base thresholds.json --out thresholds_v2.json 2>&1 | tee logs/calibrate_v2.log
+```
+
+`calibrate` prints the chosen v2 weights and EWMA λ per plant. **Then freeze:**
+
+```bash
+git add -A && git commit -m "Freeze v2: code, campaigns, thresholds_v2.json before test_v2"
+git tag -a v2-freeze -m "v2 frozen before test_v2"
+shasum -a 256 thresholds.json thresholds_v2.json campaigns/test_v2.toml campaigns/mismatch_v2_*.toml | tee logs/freeze_v2_checksums.txt
+```
+
+From here on, change nothing. Then test and report:
+
+```bash
+for c in test_v2 mismatch_v2_0x mismatch_v2_2x; do
+  caffeinate -dimsu python -m utmsim run --campaign campaigns/$c.toml --workers 14 2>&1 | tee logs/$c.log
+  python -m utmsim verify --campaign campaigns/$c.toml
+  caffeinate -dimsu python -m utmsim report --results results/$c --thresholds thresholds_v2.json --out report_$c --bootstrap 200 2>&1 | tee logs/report_$c.log
+done
+```
+
+Commit the results (`git add -f results/*_v2* logs report_*v2*`) and tag `v2-campaign`.
+
+
 
 | Symptom | Fix |
 |---|---|
