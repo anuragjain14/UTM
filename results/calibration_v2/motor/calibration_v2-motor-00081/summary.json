@@ -1,0 +1,56 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration_v2",
+    "sha256": "fb973fa1ecd2c4c8ee477d7f99080420224d8fe5aa7e042b47fad5a59874e648",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "8",
+    "mechanism": "N3",
+    "modality": "vibration",
+    "origin": "natural"
+  },
+  "n_compromised": 1944,
+  "n_windows": 2725,
+  "seeds": {
+    "corruption": 1502743528,
+    "design": 1363079646,
+    "detectors": 2823878540,
+    "plant": 2961440304,
+    "sensors": 3167799346,
+    "window": 592950451
+  },
+  "sensor_counts": {
+    "acoustic": 9,
+    "ambient": 1,
+    "current": 9,
+    "speed": 2,
+    "temperature": 9,
+    "vibration": 9
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": 2339.499,
+    "fs_hz": 604.127,
+    "horizon_h": 5640.068,
+    "kind": "combo",
+    "magnitude_k": 1.0,
+    "mechanism": "N3",
+    "noise_frac": 0.002007,
+    "onset_h": 1752.351,
+    "origin": "natural",
+    "process_fault": "P1_bearing_wear",
+    "run_id": "calibration_v2-motor-00081",
+    "run_index": 81,
+    "scenario": "motor",
+    "sensors_per_modality": 9,
+    "severity": "k1"
+  }
+}

@@ -1,0 +1,341 @@
+{
+  "fpr_target": 0.01,
+  "scenarios": {
+    "motor": {
+      "calibration_auc_proposed": 0.7196329653660561,
+      "campaign_sha256": [
+        "fb973fa1ecd2c4c8ee477d7f99080420224d8fe5aa7e042b47fad5a59874e648"
+      ],
+      "n_negative_windows": 415300,
+      "n_runs": 300,
+      "n_windows": 838625,
+      "thresholds": {
+        "B1_separated": 66544598.99999975,
+        "B2_security": 16.45093650817862,
+        "B3_reliability": 66544598.99999975,
+        "B4_iforest": 6.83710958480831,
+        "B5_ocsvm": 7.277939796447754,
+        "B6_pca": 2047.493779296861,
+        "B7_cusum": 46.79951343536376,
+        "cm_only": 7.142779049873343,
+        "gate_cm_phys": 111.37669776260827,
+        "learn_only": 178.77905929565424,
+        "phys_R1_current_speed": 16.706658821105947,
+        "phys_R2_acoustic_vibration": 22.37070589065551,
+        "phys_R3_thermal": 44.74438426971422,
+        "phys_R4_vibration_speed": 220.716295623779,
+        "phys_only": 147.3386051940912,
+        "proposed": 113.16834309774451,
+        "proposed_v2": 525.2853416655412,
+        "v2_no_accum": 517.5009135061512,
+        "v2_no_fa": 969.0898527007222,
+        "v2_no_hybrid": 63.45619356134731
+      },
+      "v2": {
+        "proposed_v2": {
+          "calibration_auc": 0.8664529523042395,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 0.2,
+          "w": [
+            0.25,
+            0.25,
+            0.25,
+            0.0,
+            0.25
+          ]
+        },
+        "v2_no_accum": {
+          "calibration_auc": 0.8626792785247914,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 1.0,
+          "w": [
+            0.25,
+            0.25,
+            0.25,
+            0.0,
+            0.25
+          ]
+        },
+        "v2_no_fa": {
+          "calibration_auc": 0.8627902623943213,
+          "inputs": [
+            "cm",
+            "phys",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 0.1,
+          "w": [
+            0.25,
+            0.0,
+            0.25,
+            0.0,
+            0.5
+          ]
+        },
+        "v2_no_hybrid": {
+          "calibration_auc": 0.8424521780739829,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2"
+          ],
+          "lambda": 0.05,
+          "w": [
+            0.5,
+            0.25,
+            0.25
+          ]
+        }
+      },
+      "weights": {
+        "gate_cm_phys": [
+          0.25,
+          0.75
+        ],
+        "proposed": [
+          0.25,
+          0.5,
+          0.25
+        ]
+      }
+    },
+    "reactor": {
+      "calibration_auc_proposed": 0.6145729771968254,
+      "campaign_sha256": [
+        "fb973fa1ecd2c4c8ee477d7f99080420224d8fe5aa7e042b47fad5a59874e648"
+      ],
+      "n_negative_windows": 409199,
+      "n_runs": 300,
+      "n_windows": 796054,
+      "thresholds": {
+        "B1_separated": 89738746.87999998,
+        "B2_security": 3.733851604461669,
+        "B3_reliability": 89738746.87999998,
+        "B4_iforest": 2.812372064590451,
+        "B5_ocsvm": 22.400539855956694,
+        "B6_pca": 564.2365332031245,
+        "B7_cusum": 713.8880004882812,
+        "cm_only": 5.377159328460655,
+        "gate_cm_phys": 47.537828369140485,
+        "learn_only": 10.293388061523427,
+        "phys_R1_mass_balance": 4.155739173889108,
+        "phys_R2_pressure_temperature": 80.94491638183592,
+        "phys_R3_coolant_controller": 116.04804199218731,
+        "phys_only": 47.537828369140485,
+        "proposed": 7.694270662665358,
+        "proposed_v2": 111.74554415960003,
+        "v2_no_accum": 108.07253949120677,
+        "v2_no_fa": 111.74554415960003,
+        "v2_no_hybrid": 8.063326581644798
+      },
+      "v2": {
+        "proposed_v2": {
+          "calibration_auc": 0.9089493151270839,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 0.2,
+          "w": [
+            0.25,
+            0.0,
+            0.5,
+            0.0,
+            0.25
+          ]
+        },
+        "v2_no_accum": {
+          "calibration_auc": 0.8940577233491313,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 1.0,
+          "w": [
+            0.5,
+            0.0,
+            0.25,
+            0.0,
+            0.25
+          ]
+        },
+        "v2_no_fa": {
+          "calibration_auc": 0.9089493151270839,
+          "inputs": [
+            "cm",
+            "phys",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 0.2,
+          "w": [
+            0.25,
+            0.0,
+            0.5,
+            0.0,
+            0.25
+          ]
+        },
+        "v2_no_hybrid": {
+          "calibration_auc": 0.9070433692231902,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2"
+          ],
+          "lambda": 0.05,
+          "w": [
+            0.5,
+            0.25,
+            0.25
+          ]
+        }
+      },
+      "weights": {
+        "gate_cm_phys": [
+          0.0,
+          1.0
+        ],
+        "proposed": [
+          0.25,
+          0.0,
+          0.75
+        ]
+      }
+    },
+    "robot": {
+      "calibration_auc_proposed": 0.5695994381756717,
+      "campaign_sha256": [
+        "fb973fa1ecd2c4c8ee477d7f99080420224d8fe5aa7e042b47fad5a59874e648"
+      ],
+      "n_negative_windows": 400478,
+      "n_runs": 300,
+      "n_windows": 776163,
+      "thresholds": {
+        "B1_separated": 13317295.999999996,
+        "B2_security": 7990.961289062497,
+        "B3_reliability": 13317295.999999996,
+        "B4_iforest": 7.079599857330322,
+        "B5_ocsvm": 22.381331558227522,
+        "B6_pca": 67.73801864624002,
+        "B7_cusum": 229.19029602050693,
+        "cm_only": 6.1095514011383045,
+        "gate_cm_phys": 106.3329202270507,
+        "learn_only": 110.6659017944328,
+        "phys_R1_kinematics": 171.29422058105467,
+        "phys_R2_dynamics": 310.5844757080078,
+        "phys_R3_payload": 22.419365463256828,
+        "phys_only": 106.3329202270507,
+        "proposed": 106.3329202270507,
+        "proposed_v2": 60.22034092754535,
+        "v2_no_accum": 60.54294771671265,
+        "v2_no_fa": 42.2063513751311,
+        "v2_no_hybrid": 40.34582857676523
+      },
+      "v2": {
+        "proposed_v2": {
+          "calibration_auc": 0.7452134897501187,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 0.05,
+          "w": [
+            0.0,
+            0.5,
+            0.0,
+            0.0,
+            0.5
+          ]
+        },
+        "v2_no_accum": {
+          "calibration_auc": 0.7300618881203029,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 1.0,
+          "w": [
+            0.0,
+            0.5,
+            0.0,
+            0.0,
+            0.5
+          ]
+        },
+        "v2_no_fa": {
+          "calibration_auc": 0.7619305071049914,
+          "inputs": [
+            "cm",
+            "phys",
+            "learn2",
+            "rel_vote",
+            "pca"
+          ],
+          "lambda": 0.05,
+          "w": [
+            0.25,
+            0.5,
+            0.0,
+            0.0,
+            0.25
+          ]
+        },
+        "v2_no_hybrid": {
+          "calibration_auc": 0.7058735768274513,
+          "inputs": [
+            "cm",
+            "phys_fa",
+            "learn2"
+          ],
+          "lambda": 0.05,
+          "w": [
+            0.25,
+            0.75,
+            0.0
+          ]
+        }
+      },
+      "weights": {
+        "gate_cm_phys": [
+          0.0,
+          1.0
+        ],
+        "proposed": [
+          0.0,
+          1.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "source": "results/calibration_v2",
+  "v1_source": "results/calibration"
+}

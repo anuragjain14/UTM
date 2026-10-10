@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration_v2",
+    "sha256": "fb973fa1ecd2c4c8ee477d7f99080420224d8fe5aa7e042b47fad5a59874e648",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "11",
+    "mechanism": "N2",
+    "modality": "pressure",
+    "origin": "natural"
+  },
+  "n_compromised": 1346,
+  "n_windows": 1469,
+  "seeds": {
+    "corruption": 2281523668,
+    "design": 1176283974,
+    "detectors": 84992394,
+    "plant": 738200736,
+    "sensors": 248620528,
+    "window": 26647481
+  },
+  "sensor_counts": {
+    "coolant_flow": 13,
+    "feed_flow": 2,
+    "level": 13,
+    "pressure": 13,
+    "temperature": 13
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": 2771.051,
+    "fs_hz": 6.683,
+    "horizon_h": 3129.246,
+    "kind": "combo",
+    "magnitude_k": 4.0,
+    "mechanism": "N2",
+    "noise_frac": 0.00164,
+    "onset_h": 437.627,
+    "origin": "natural",
+    "process_fault": "P2_fouling",
+    "run_id": "calibration_v2-reactor-00153",
+    "run_index": 453,
+    "scenario": "reactor",
+    "sensors_per_modality": 13,
+    "severity": "k4"
+  }
+}

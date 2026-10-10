@@ -1,0 +1,54 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration_v2",
+    "sha256": "fb973fa1ecd2c4c8ee477d7f99080420224d8fe5aa7e042b47fad5a59874e648",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "5",
+    "mechanism": "N4",
+    "modality": "force",
+    "origin": "natural"
+  },
+  "n_compromised": 1295,
+  "n_windows": 3580,
+  "seeds": {
+    "corruption": 3907215754,
+    "design": 1241569590,
+    "detectors": 3110354786,
+    "plant": 3362825471,
+    "sensors": 1379295591,
+    "window": 2330127120
+  },
+  "sensor_counts": {
+    "current": 10,
+    "force": 6,
+    "position": 10,
+    "vision": 3
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": 258.322,
+    "fs_hz": 458.824,
+    "horizon_h": 7350.174,
+    "kind": "combo",
+    "magnitude_k": 4.0,
+    "mechanism": "N4",
+    "noise_frac": 0.031607,
+    "onset_h": 4760.215,
+    "origin": "natural",
+    "process_fault": "P3_joint_friction",
+    "run_id": "calibration_v2-robot-00142",
+    "run_index": 742,
+    "scenario": "robot",
+    "sensors_per_modality": 10,
+    "severity": "k4"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration_v2",
+    "sha256": "fb973fa1ecd2c4c8ee477d7f99080420224d8fe5aa7e042b47fad5a59874e648",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": null,
+  "n_compromised": 0,
+  "n_windows": 3415,
+  "seeds": {
+    "corruption": 3383049348,
+    "design": 1529825499,
+    "detectors": 2088242432,
+    "plant": 1567371139,
+    "sensors": 2578213845,
+    "window": 3843960621
+  },
+  "sensor_counts": {
+    "acoustic": 5,
+    "ambient": 1,
+    "current": 5,
+    "speed": 2,
+    "temperature": 5,
+    "vibration": 5
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 286.998,
+    "horizon_h": 7021.726,
+    "kind": "clean",
+    "mechanism": null,
+    "noise_frac": 0.005711,
+    "onset_h": null,
+    "origin": "none",
+    "process_fault": null,
+    "run_id": "calibration_v2-motor-00160",
+    "run_index": 160,
+    "scenario": "motor",
+    "sensors_per_modality": 5,
+    "severity": null
+  }
+}

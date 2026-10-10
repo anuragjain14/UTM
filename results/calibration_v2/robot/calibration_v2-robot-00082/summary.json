@@ -1,0 +1,54 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "calibration",
+    "mismatch": 1.0,
+    "name": "calibration_v2",
+    "sha256": "fb973fa1ecd2c4c8ee477d7f99080420224d8fe5aa7e042b47fad5a59874e648",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "4",
+    "mechanism": "A2",
+    "modality": "current",
+    "origin": "adversarial"
+  },
+  "n_compromised": 2288,
+  "n_windows": 4479,
+  "seeds": {
+    "corruption": 2702384386,
+    "design": 3334221022,
+    "detectors": 634874277,
+    "plant": 3214901628,
+    "sensors": 930577678,
+    "window": 1040206718
+  },
+  "sensor_counts": {
+    "current": 6,
+    "force": 6,
+    "position": 6,
+    "vision": 3
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": "mimic",
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 364.028,
+    "horizon_h": 9148.284,
+    "kind": "corruption",
+    "magnitude_k": 1.0,
+    "mechanism": "A2",
+    "noise_frac": 0.027087,
+    "onset_h": 4573.942,
+    "origin": "adversarial",
+    "process_fault": null,
+    "run_id": "calibration_v2-robot-00082",
+    "run_index": 682,
+    "scenario": "robot",
+    "sensors_per_modality": 6,
+    "severity": "k1"
+  }
+}
