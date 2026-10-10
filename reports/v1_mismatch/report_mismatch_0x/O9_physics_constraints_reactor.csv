@@ -1,0 +1,4 @@
+constraint,recall,fpr,auc
+R1_mass_balance,0.0105774,0.00588382,0.510423
+R2_pressure_temperature,0.105615,0,0.799929
+R3_coolant_controller,0.075766,0.0198654,0.6443

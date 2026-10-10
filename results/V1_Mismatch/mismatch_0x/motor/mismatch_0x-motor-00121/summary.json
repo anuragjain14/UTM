@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 0.0,
+    "name": "mismatch_0x",
+    "sha256": "e337d786e580522a1877d2733da056b179fb76b729da792992f292c1e6e5c46b",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "3;4",
+    "mechanism": "A4",
+    "modality": "current",
+    "origin": "adversarial"
+  },
+  "n_compromised": 2477,
+  "n_windows": 3725,
+  "seeds": {
+    "corruption": 1384436608,
+    "design": 4242226440,
+    "detectors": 2149652284,
+    "plant": 2004388794,
+    "sensors": 2069749417,
+    "window": 885364795
+  },
+  "sensor_counts": {
+    "acoustic": 14,
+    "ambient": 1,
+    "current": 14,
+    "speed": 2,
+    "temperature": 14,
+    "vibration": 14
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": "K0",
+    "fault_onset_h": null,
+    "fs_hz": 849.29,
+    "horizon_h": 7641.666,
+    "kind": "corruption",
+    "mechanism": "A4",
+    "noise_frac": 0.02507,
+    "onset_h": 2687.68,
+    "origin": "adversarial",
+    "process_fault": null,
+    "run_id": "mismatch_0x-motor-00121",
+    "run_index": 121,
+    "scenario": "motor",
+    "sensors_per_modality": 14,
+    "severity": "low"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 0.0,
+    "name": "mismatch_0x",
+    "sha256": "e337d786e580522a1877d2733da056b179fb76b729da792992f292c1e6e5c46b",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": null,
+  "n_compromised": 0,
+  "n_windows": 1291,
+  "seeds": {
+    "corruption": 2042024337,
+    "design": 901073168,
+    "detectors": 3932668016,
+    "plant": 877335205,
+    "sensors": 2637628096,
+    "window": 1167531918
+  },
+  "sensor_counts": {
+    "coolant_flow": 9,
+    "feed_flow": 2,
+    "level": 9,
+    "pressure": 9,
+    "temperature": 9
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": 967.414,
+    "fs_hz": 2.606,
+    "horizon_h": 2772.727,
+    "kind": "process_only",
+    "mechanism": null,
+    "noise_frac": 0.006113,
+    "onset_h": null,
+    "origin": "none",
+    "process_fault": "P2_fouling",
+    "run_id": "mismatch_0x-reactor-00096",
+    "run_index": 396,
+    "scenario": "reactor",
+    "sensors_per_modality": 9,
+    "severity": null
+  }
+}

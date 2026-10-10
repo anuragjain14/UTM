@@ -1,0 +1,11 @@
+architecture,wrongful_quarantine_during_process_faults,n_process_fault_windows,unnecessary_quarantine_h_per_1000h,safety_exposure_h_per_event_mean
+proposed,0.0112343,40323,1.13215,3211.4
+gate_cm_phys,0.0525755,40323,5.29836,3214.06
+B1_separated,0.00612554,40323,13.061,3115.86
+B2_security,0.0142351,40323,9.41708,3157.32
+B3_reliability,0.00612554,40323,13.061,3115.86
+B4_iforest,0.00644793,40323,2.64918,3199.77
+B5_ocsvm,0.0502195,40323,6.86537,3204.79
+B6_pca,0.0807232,40323,8.13498,2919
+B7_cusum,0.124073,40323,14.1831,3191.74
+B0_no_checks,0,40323,0,3217.35

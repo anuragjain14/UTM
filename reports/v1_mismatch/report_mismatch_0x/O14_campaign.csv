@@ -1,0 +1,8 @@
+item,value
+Campaign kind(s),test
+Runs,900
+Operation windows evaluated,2,409,702
+Hardware,Apple M3 Max (16 cores), macOS-27.0-arm64-arm-64bit-Mach-O
+Software,Python 3.14.4, numpy 2.5.3, scikit-learn 1.9.1
+Total compute (sum of run wall times),7.25 core-hours
+Code version(s),f2e9e4b08574c290797bee5f81d63cddb24a89b4-dirty

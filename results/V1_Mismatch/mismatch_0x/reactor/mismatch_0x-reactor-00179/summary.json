@@ -1,0 +1,54 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 0.0,
+    "name": "mismatch_0x",
+    "sha256": "e337d786e580522a1877d2733da056b179fb76b729da792992f292c1e6e5c46b",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "0;1;2;3;4;5;6;7;8;9;10;11;12;13",
+    "mechanism": "A3",
+    "modality": "temperature",
+    "origin": "adversarial"
+  },
+  "n_compromised": 1205,
+  "n_windows": 3210,
+  "seeds": {
+    "corruption": 288343084,
+    "design": 2858311038,
+    "detectors": 1949084764,
+    "plant": 710992273,
+    "sensors": 8020417,
+    "window": 2885646466
+  },
+  "sensor_counts": {
+    "coolant_flow": 14,
+    "feed_flow": 2,
+    "level": 14,
+    "pressure": 14,
+    "temperature": 14
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 3.201,
+    "horizon_h": 6610.378,
+    "kind": "corruption",
+    "mechanism": "A3",
+    "noise_frac": 0.01248,
+    "onset_h": 4201.436,
+    "origin": "adversarial",
+    "process_fault": null,
+    "run_id": "mismatch_0x-reactor-00179",
+    "run_index": 479,
+    "scenario": "reactor",
+    "sensors_per_modality": 14,
+    "severity": "medium"
+  }
+}

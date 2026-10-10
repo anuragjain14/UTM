@@ -1,0 +1,10 @@
+pair,n_natural,n_adversarial,chance,classifier,accuracy,acc_lo,acc_hi
+N1 vs A1 (naive),22,12,0.647059,logistic regression (5-fold CV),0.617647,0.450407,0.761
+N1 vs A1 (naive),22,12,0.647059,gradient boosting (5-fold CV),0.882353,0.733788,0.953286
+N1 vs A1 (mimic),22,8,0.733333,logistic regression (5-fold CV),0.7,0.521239,0.833354
+N1 vs A1 (mimic),22,8,0.733333,gradient boosting (5-fold CV),0.666667,0.487797,0.807697
+N2 vs A5,23,23,0.5,logistic regression (5-fold CV),0.456522,0.321545,0.598201
+N2 vs A5,23,23,0.5,gradient boosting (5-fold CV),0.456522,0.321545,0.598201
+N3 vs A2 (naive),21,13,0.617647,logistic regression (5-fold CV),0.588235,0.422213,0.736343
+N3 vs A2 (naive),21,13,0.617647,gradient boosting (5-fold CV),0.794118,0.632013,0.896506
+N3 vs A2 (mimic),21,7,0.75,insufficient runs (< 8 per class),nan,nan,nan

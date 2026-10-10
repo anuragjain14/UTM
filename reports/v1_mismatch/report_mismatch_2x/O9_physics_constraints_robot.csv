@@ -1,0 +1,4 @@
+constraint,recall,fpr,auc
+R1_kinematics,0.0326379,0.0116918,0.54151
+R2_dynamics,0.0066561,0.000339282,0.510525
+R3_payload,0.0578745,0.0218165,0.530323

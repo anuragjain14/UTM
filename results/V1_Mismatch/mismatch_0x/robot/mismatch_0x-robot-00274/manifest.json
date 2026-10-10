@@ -1,0 +1,22 @@
+{
+  "code_commit": "f2e9e4b08574c290797bee5f81d63cddb24a89b4-dirty",
+  "environment": {
+    "cpu_count": 16,
+    "cpu_model": "Apple M3 Max",
+    "hostname": "Manns-M3-Max.local",
+    "machine": "arm64",
+    "numpy": "2.5.3",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "python": "3.14.4",
+    "scikit_learn": "1.9.1"
+  },
+  "files": {
+    "summary.json": "298dbd3fe35659565a4e138d76a98c24d29816d380c8a3d033fe0b9b8314c087",
+    "timing.csv.gz": "fb6152dfa8a611d02e3a4aa00a161f3bdbdc5468255b688bdf00ea8f063c9b8c",
+    "windows.csv.gz": "ce7e84fd369deec5dcf439cd28c3cfef4638bf92ed4d7ba67a734a60fcc67efd"
+  },
+  "finished_utc": "2026-10-09T22:58:32Z",
+  "peak_rss_mb": 255.9,
+  "run_id": "mismatch_0x-robot-00274",
+  "wall_s": 47.531
+}

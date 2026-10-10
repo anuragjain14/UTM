@@ -1,0 +1,55 @@
+{
+  "campaign": {
+    "eval_every_h": 2.0,
+    "kind": "test",
+    "mismatch": 2.0,
+    "name": "mismatch_2x",
+    "sha256": "5852ae0d4f88457d189bce30468d1d8e49b696172c1e6e3fc691dec4c996b59a",
+    "warmup_h": 192.0,
+    "window_samples": 512
+  },
+  "corruption": {
+    "affected_sensors": "0",
+    "mechanism": "N5",
+    "modality": "temperature",
+    "origin": "natural"
+  },
+  "n_compromised": 147,
+  "n_windows": 508,
+  "seeds": {
+    "corruption": 3046123313,
+    "design": 2268286447,
+    "detectors": 1377177934,
+    "plant": 95759330,
+    "sensors": 122276391,
+    "window": 1326562537
+  },
+  "sensor_counts": {
+    "acoustic": 16,
+    "ambient": 1,
+    "current": 16,
+    "speed": 2,
+    "temperature": 16,
+    "vibration": 16
+  },
+  "simulator_version": "0.1.0",
+  "sklearn_baselines": true,
+  "spec": {
+    "attack_mode": null,
+    "attacker_knowledge": null,
+    "fault_onset_h": null,
+    "fs_hz": 966.526,
+    "horizon_h": 1206.617,
+    "kind": "corruption",
+    "mechanism": "N5",
+    "noise_frac": 0.031016,
+    "onset_h": 472.188,
+    "origin": "natural",
+    "process_fault": null,
+    "run_id": "mismatch_2x-motor-00128",
+    "run_index": 128,
+    "scenario": "motor",
+    "sensors_per_modality": 16,
+    "severity": "high"
+  }
+}
